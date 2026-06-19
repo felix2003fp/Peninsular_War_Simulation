@@ -1,0 +1,231 @@
+node_id,full_name,latitude,longitude,terra1,terra2,node_type,strategic_importance,garrison_size
+URG,Urgell,42.35877,1.46144,R,M,town,2,0
+SOL,Solsona,41.99395,1.51706,R,M,town,2,0
+BER,Berga,42.10429,1.84628,R,W,town,2,0
+RIP,Ripoll,42.20064,2.19033,G,W,town,2,0
+VIC,Vic,41.93012,2.25486,R,M,city,3,600
+GIR,Girona,41.98311,2.82493,R,M,city,3,600
+HOS,Hostalrich,41.75,2.63333,R,M,town,2,0
+MAN,Manresa,41.72815,1.82399,R,M,city,3,600
+BAR,Barcelona,41.38879,2.15899,F,M,regional_capital,5,2000
+MAR,Martorell,41.47402,1.93062,R,M,town,2,0
+VIF,Vilafranca,41.34618,1.69713,R,M,town,2,0
+VIN,Vilanova,41.22392,1.72511,F,M,town,2,0
+TAR,Tarragona,41.11905,1.24544,F,M,city,3,600
+TOR,Tortosa,40.81249,0.5216,F,M,city,3,600
+CER,Cervera,41.67003,1.2721,R,B,town,2,0
+LLE,Lleida,41.61674,0.62218,F,B,city,3,600
+IN1,Intersecció Lleida-Cervera-Tarragona,41.66,0.92,F,B,intersection,1,0
+VIE,Viella,42.6997,0.7936,G,M,town,2,0
+CAS,Castellón,39.9864,-0.0513,F,M,city,3,600
+CAF,Castellfort,40.50208,-0.19133,R,M,town,2,0
+MUR,Murviedo,39.68333,-0.26667,F,M,town,2,0
+VAL,Valencia,39.47391,-0.37966,F,M,regional_capital,5,2000
+SEG,Segorve,39.85,-0.48333,R,M,town,2,0
+GAN,Gandia,38.96667,-0.18333,F,M,town,2,0
+SAF,San Felipe,38.99042,-0.51852,R,M,city,3,600
+XIX,Xixona,38.54086,-0.50263,R,B,town,2,0
+ALI,Alicante,38.34517,-0.48149,F,M,city,3,600
+ORI,Orihuela,38.08483,-0.94401,F,B,major_city,4,1200
+CHI,Chinchilla,38.9167,-1.7333,F,B,town,2,0
+ALB,Albacete,38.99424,-1.85643,F,B,town,2,0
+YEC,Yecla,38.61365,-1.11468,R,B,city,3,600
+JUM,Jumilla,38.47917,-1.325,R,B,town,2,0
+MRC,Murcia,37.98704,-1.13004,F,B,regional_capital,5,2000
+MUL,Mula,38.04095,-1.49014,R,B,town,2,0
+CAR,Caravaca,38.10558,-1.86343,R,B,city,3,600
+LOR,Lorca,37.67119,-1.7017,R,B,major_city,4,1200
+CTG,Cartagena,37.60197,-0.98397,F,M,major_city,4,1200
+VER,Verdun,42.85,-0.55,G,M,town,2,0
+VNS,Venasque,42.60528,0.52305,G,B,town,2,0
+JAC,Jaca,42.56898,-0.54987,G,M,town,2,0
+AIN,Ainsa,42.41547,0.14008,G,M,town,2,0
+AYE,Ayerbe,42.27267,-0.68844,R,M,town,2,0
+HUE,Huesca,42.13615,-0.4087,R,M,town,2,0
+BRB,Barbastro,42.03565,0.12686,R,M,town,2,0
+LIC,Licinena,41.79868,-0.61174,F,B,town,2,0
+ZAR,Zaragoza,41.65606,-0.87734,F,B,major_city,4,1200
+FRA,Fraga,41.52294,0.34894,F,B,town,2,0
+PAL,Palomar,40.77911,-0.75055,R,B,town,2,0
+TER,Teruel,40.3456,-1.10646,R,B,town,2,0
+ALR,Albarracin,40.40818,-1.44375,G,M,town,2,0
+DAR,Daroca,41.11475,-1.41492,R,B,town,2,0
+CAL,Calatayud,41.35353,-1.64318,R,B,city,3,600
+BOR,Borja,41.83412,-1.53271,R,B,town,2,0
+TAZ,Tarazona,41.90475,-1.72678,R,B,town,2,0
+MAY,Maya,43.2,-1.55,G,W,town,2,0
+PAM,Pamplona,42.81687,-1.64323,R,M,city,3,600
+SGS,Sanguessa,42.5694,-1.2819,R,M,town,2,0
+CAP,Caparroso,42.34129,-1.64962,F,B,town,2,0
+TUD,Tudela,42.06166,-1.60452,F,B,city,3,600
+EST,Estella,42.67182,-2.03226,R,M,town,2,0
+VNA,Viana,42.5167,-2.3667,R,M,town,2,0
+FUE,Fuenterrabía,43.36859,-1.79622,R,W,town,2,0
+TOL,Tolosa,43.13484,-2.07801,R,W,town,2,0
+ERM,Ermua,43.18725,-2.50261,R,W,town,2,0
+BIL,Bilbao,43.26271,-2.92528,R,W,city,3,600
+ORD,Orduña,42.99435,-3.00974,G,W,town,2,0
+SAL,Salvatierra,42.85,-2.3833,R,M,town,2,0
+VIT,Vitoria,42.8467,-2.6728,R,M,town,2,0
+CLA,Calahorra,42.30506,-1.96521,F,B,town,2,0
+FRI,Frías,42.7597,-3.4069,G,M,town,2,0
+AMP,Ampuero,43.34268,-3.41667,R,W,town,2,0
+ONT,Unquera,43.3833,-4.5167,R,W,town,2,0
+MON,Mondoñedo,43.42682,-7.35833,R,W,town,2,0
+BET,Betanzos,43.28042,-8.21467,R,W,town,2,0
+FER,Ferrol,43.48451,-8.23293,R,W,city,3,600
+COR,La Coruña,43.37135,-8.396,R,W,city,3,600
+LUG,Lugo,43.00992,-7.55602,R,W,city,3,600
+STG,Santiago,42.88052,-8.54569,R,W,city,3,600
+ORE,Orense,42.33669,-7.86407,R,W,town,2,0
+RBD,Ribadavia,42.28804,-8.14362,R,W,town,2,0
+VIG,Vigo,42.23282,-8.72264,R,W,town,2,0
+TUY,Tuy,42.04713,-8.64435,R,W,town,2,0
+MTR,Monterrey,41.9667,-7.45,R,M,town,2,0
+INF,Infiesto,43.3553,-5.3597,R,W,town,2,0
+GIJ,Gijón,43.53573,-5.66152,R,W,city,3,600
+OVI,Oviedo,43.36029,-5.84476,R,W,city,3,600
+COL,Collanzo,43.1667,-5.65,G,W,town,2,0
+NAV,Navia,43.53544,-6.71935,R,W,town,2,0
+LAR,Larón,43.1333,-6.5833,G,W,town,2,0
+ESP,Espinosa de los Monteros,43.07754,-3.55365,G,W,town,2,0
+SAN,Santander,43.46589,-3.80493,R,W,city,3,600
+POT,Potes,43.15457,-4.62055,G,W,town,2,0
+VLL,Velilla,42.8333,-4.85,R,M,town,2,0
+REI,Reinosa,42.99959,-4.13801,G,M,town,2,0
+CRR,Carrión,42.3413,-4.60071,F,B,town,2,0
+PLC,Palencia,42.00955,-4.52406,F,B,city,3,600
+VAD,Valladolid,41.65518,-4.72372,F,B,major_city,4,1200
+TDS,Tordesillas,41.50202,-5.00146,F,B,town,2,0
+PEF,Peñafiel,41.5992,-4.1131,R,B,town,2,0
+YSC,Íscar,41.36117,-4.53348,F,B,town,2,0
+SGV,Segovia,40.94808,-4.11839,R,B,city,3,600
+RIA,Riaza,41.27826,-3.47787,R,B,town,2,0
+ESC,El Escorial,40.59144,-4.14738,G,M,town,2,0
+MAD,Madrid,40.4165,-3.70256,R,B,capital,6,3000
+GUA,Guadalajara,40.62862,-3.16185,R,B,town,2,0
+BTR,Buitrago,40.9909,-3.63365,G,M,town,2,0
+SIG,Sigüenza,41.06892,-2.64308,R,B,town,2,0
+MOL,Molina de Aragón,40.84358,-1.88762,R,B,town,2,0
+CNV,Cañaveras,40.35994,-2.39611,R,B,town,2,0
+CUE,Cuenca,40.06667,-2.13333,G,M,city,3,600
+MOY,Moya,39.9333,-1.45,R,B,town,2,0
+UTL,Utiel,39.56667,-1.2,R,B,town,2,0
+TAM,Tarazona de la Mancha,39.25,-1.91667,F,B,town,2,0
+MIR,Miranda de Ebro,42.6865,-2.94695,R,M,town,2,0
+LOG,Logroño,42.46615,-2.45115,R,M,town,2,0
+CAZ,Calzada,42.4397,-2.9519,R,M,town,2,0
+BUR,Burgos,42.34106,-3.70184,F,B,city,3,600
+VLD,Villadiego,42.51589,-4.00958,F,B,town,2,0
+MCR,Mecerreyes,42.09536,-3.57393,R,B,town,2,0
+ARN,Aranda de Duero,41.67041,-3.6892,F,B,town,2,0
+AGR,Ágreda,41.85588,-1.92244,R,B,town,2,0
+SOR,Soria,41.76401,-2.46883,R,B,town,2,0
+DEZ,Deza,41.46373,-2.02046,R,B,town,2,0
+ALM,Almazán,41.48648,-2.53088,R,B,town,2,0
+BRL,Osma,41.5867,-3.0667,R,B,town,2,0
+UTR,Utrilla,41.2167,-2.4167,R,B,town,2,0
+VLF,Villafranca del Bierzo,42.60601,-6.81069,R,W,town,2,0
+AST,Astorga,42.4567,-6.0553,F,M,town,2,0
+LEO,León,42.60003,-5.57032,F,M,town,2,0
+ALZ,Almanza,42.65825,-5.0362,R,M,town,2,0
+VDR,Valderas,42.0783,-5.44355,F,B,town,2,0
+BRG,Bragança,41.8061,-6.7588,R,M,town,2,0
+MND,Miranda do Douro,41.49692,-6.27308,R,M,town,2,0
+ZAM,Zamora,41.50633,-5.74456,F,B,city,3,600
+TRO,Toro,41.5225,-5.3967,F,B,town,2,0
+MRL,Mirandela,41.48739,-7.18695,R,M,town,2,0
+CAM,Caminha,41.8739,-8.8381,F,M,town,2,0
+BRA,Braga,41.5514,-8.42311,R,W,major_city,4,1200
+GUI,Guimarães,41.44443,-8.29619,R,W,city,3,600
+OPO,Oporto,41.1485,-8.61097,F,M,regional_capital,5,2000
+HIN,Hinojosa del Duero,41.0167,-6.7,R,B,town,2,0
+SLM,Salamanca,40.9701,-5.6635,R,B,city,3,600
+ALA,Alaejos,41.3167,-5.2167,F,B,town,2,0
+CRO,Ciudad Rodrigo,40.5964,-6.5322,R,M,town,2,0
+MAG,Madrigal de las Altas Torres,41.0833,-5.0,F,B,town,2,0
+BON,Bonilla de la Sierra,40.7167,-5.3833,R,M,town,2,0
+AVI,Ávila,40.6564,-4.6998,R,B,town,2,0
+MBT,Mombeltrán,40.25,-5.0167,G,M,town,2,0
+OVR,Ovar,40.85862,-8.62513,F,M,town,2,0
+LAM,Lamego,41.09741,-7.80991,R,M,town,2,0
+SJP,São João da Pesqueira,41.14805,-7.40489,R,M,town,2,0
+ALD,Almeida,40.7264,-6.9072,R,M,town,2,0
+VIS,Viseu,40.66165,-7.90905,R,M,town,2,0
+GRD,Guarda,40.53754,-7.26631,G,M,town,2,0
+CVL,Covilhã,40.28106,-7.50504,G,M,town,2,0
+CTB,Castelo Branco,39.82364,-7.49101,R,M,town,2,0
+COI,Coimbra,40.20686,-8.41996,R,W,city,3,600
+TAL,Talavera de la Reina,39.96348,-4.83076,F,B,town,2,0
+PLA,Plasencia,40.03116,-6.08845,R,M,town,2,0
+CRI,Coria,39.98406,-6.53603,F,B,town,2,0
+TRJ,Trujillo,39.45786,-5.88203,R,B,town,2,0
+ABQ,Alburquerque,39.22076,-7.00234,R,B,town,2,0
+MER,Mérida,38.91802,-6.34292,F,B,town,2,0
+MDL,Medellín,38.9583,-5.9667,F,B,town,2,0
+BAD,Badajoz,38.87789,-6.97061,F,B,city,3,600
+PAC,Puebla de Alcócer,38.98648,-5.25633,R,B,town,2,0
+AMJ,Almendralejo,38.68316,-6.40747,F,B,town,2,0
+ZAF,Zafra,38.42539,-6.41734,R,B,town,2,0
+JRC,Jerez de los Caballeros,38.32063,-6.7726,R,B,town,2,0
+LLR,Llerena,38.23333,-6.01667,R,B,town,2,0
+LEI,Leiria,39.74362,-8.80705,R,M,city,3,600
+ABR,Abrantes,39.46667,-8.2,R,M,town,2,0
+SNT,Santarém,39.2333,-8.6833,R,M,city,3,600
+TVD,Torres Vedras,39.09109,-9.2586,R,M,town,2,0
+LIS,Lisboa,38.72509,-9.1498,R,M,capital,6,3000
+PTL,Portalegre,39.29379,-7.43122,R,M,town,2,0
+ETZ,Estremoz,38.84432,-7.58585,F,B,town,2,0
+EVO,Évora,38.56587,-7.90405,F,B,city,3,600
+SET,Setúbal,38.5244,-8.8882,R,M,city,3,600
+BEJ,Beja,38.01469,-7.86284,F,B,city,3,600
+CTV,Castro Verde,37.69828,-8.08581,F,B,town,2,0
+SRD,Serdão,37.9167,-8.5,R,M,town,2,0
+LAG,Lagos,37.0992,-8.673,F,M,town,2,0
+FAR,Faro,37.01869,-7.92716,F,M,city,3,600
+ARJ,Aranjuez,40.03108,-3.60246,F,B,town,2,0
+TLD,Toledo,39.8581,-4.02263,R,B,city,3,600
+LGU,La Guardia,39.78795,-3.47604,F,B,town,2,0
+HUT,Huete,40.14526,-2.69026,R,B,town,2,0
+EDR,Espinosa del Rey,39.65,-4.85,R,B,town,2,0
+ORC,Orcaja,39.3833,-4.1333,R,B,town,2,0
+CNS,Consuegra,39.46246,-3.608,F,B,town,2,0
+BNL,El Bonillo,38.95048,-2.54048,F,B,town,2,0
+SLN,La Solana,38.94422,-3.2381,F,B,town,2,0
+CRL,Ciudad Real,38.98626,-3.92907,F,B,city,3,600
+ACR,Alcaraz,38.6597,-2.4839,R,B,town,2,0
+QMD,Quemada,38.75,-2.7,R,B,town,2,0
+AMD,Almadén del Azogue,38.77541,-4.83156,R,B,town,2,0
+LIN,Linares,38.0894,-3.6347,R,B,town,2,0
+AND,Andújar,38.03922,-4.05077,F,B,city,3,600
+JAE,Jaén,37.76922,-3.79028,R,M,city,3,600
+ALC,Alcalá la Real,37.4614,-3.92301,R,M,city,3,600
+COQ,Conquista,38.4,-4.5,R,B,town,2,0
+BJL,Bujalance,37.89556,-4.38074,F,B,town,2,0
+CDB,Córdoba,37.89155,-4.77275,F,M,major_city,4,1200
+MTL,Montilla,37.58627,-4.63805,R,M,city,3,600
+LCN,Lucena,37.40891,-4.48522,R,M,city,3,600
+IN2,Intersecció Andújar-Linares-Jaén,38.03,-3.78,R,B,intersection,1,0
+HLV,Huelva,37.26638,-6.94004,F,M,town,2,0
+FRJ,Fregenal de la Sierra,38.16922,-6.6537,R,M,town,2,0
+CST,Constantina,37.86667,-5.61667,G,W,town,2,0
+CRM,Carmona,37.47125,-5.64608,F,B,city,3,600
+ECI,Écija,37.5422,-5.0826,F,B,major_city,4,1200
+SEV,Sevilla,37.38283,-5.97317,F,M,regional_capital,5,2000
+CAD,Cádiz,36.52672,-6.2891,F,M,regional_capital,5,2000
+MDS,Medina Sidonia,36.45695,-5.92717,R,M,city,3,600
+TRF,Tarifa,36.01393,-5.60695,F,M,town,2,0
+GIB,Gibraltar,36.14474,-5.35257,F,M,town,2,0
+RON,Ronda,36.74231,-5.16709,G,M,city,3,600
+MRB,Marbella,36.51543,-4.88583,F,M,town,2,0
+MAL,Málaga,36.72016,-4.42034,F,M,regional_capital,5,2000
+ANT,Antequera,37.01938,-4.56123,R,M,major_city,4,1200
+ALH,Alhama de Granada,37.00689,-3.98963,R,M,town,2,0
+LOJ,Loja,37.16887,-4.15129,R,M,city,3,600
+GRA,Granada,37.18817,-3.60667,R,M,regional_capital,5,2000
+AMR,Almería,36.83814,-2.45974,F,D,city,3,600
+BAZ,Baza,37.49073,-2.77259,R,B,town,2,0
+HSC,Huéscar,37.81104,-2.54116,R,B,town,2,0
+VRA,Vera,37.24345,-1.85905,F,D,city,3,600
+IN3,Intersecció Ronda-Marbella-Málaga,36.68,-4.85,R,M,intersection,1,0
+LJQ,La Jonquera,42.41728,2.87363,R,M,town,2,0
