@@ -1,38 +1,3 @@
-"""
-visualise_graph.py
-------------------
-Loads nodes.csv and edges.csv (enriched by enrich_map.py), projects each node
-onto the Iberian Peninsula topographic map using a calibrated lat/lon -> pixel
-conversion, and saves a JPEG overlay.
-
-Nodes are drawn using the same PNG symbols as the live renderer
-(Env/renderer.py, used by play.py / watch.py):
-
-    capital           Capital_Symbol.png
-    regional_capital  Regional_Capital_Symbol.png
-    major_city        Major_City_Symbol.png
-    city              City_Symbol.png
-    town              Town_Symbol.png
-    intersection      Intersection_Symbol.png
-
-with the following overrides:
-    Verdun (VER), La Jonquera (LJQ)  -> Reinf_Depot_Symbol.png (reinforcement depots)
-    Cadiz  (CAD)                     -> Capital_Symbol.png
-    Lisboa (LIS)                     -> Regional_Capital_Symbol.png
-
-Edge styles by road_type (matches Env/renderer.py):
-    primary    black,  solid,  thick
-    secondary  grey,   dashed, medium
-    tertiary   grey,   dotted, thin
-
-Run from the /TFG directory:
-    python Map/visualise_graph.py
-
-To improve accuracy, add more calibration points at the bottom of this file.
-Measure pixel coordinates from the ORIGINAL Iber_Pen_Topo_Map.jpg file,
-not from the output overlay.
-"""
-
 from pathlib import Path
 
 import numpy as np
@@ -56,8 +21,8 @@ MAP_FILE    = "Map/Iber_Pen_Topo_Map.jpg"
 OUTPUT_FILE = "Map/Charted_Map.jpg"
 
 # ---------------------------------------------------------------------------
-# Calibration points: (lon, lat, pixel_x, pixel_y)
-# Measured directly from Iber_Pen_Topo_Map.jpg (original file, not the output).
+# Calibration points: (lat, lon, pixel_x, pixel_y)
+# Measured directly from Iber_Pen_Topo_Map.jpg.
 # ---------------------------------------------------------------------------
 
 CALIBRATION_POINTS = [
@@ -80,9 +45,6 @@ CALIBRATION_POINTS = [
     (  36.7202, -4.4203,   949,  1633),   # Malaga
     (  41.1485, -8.6110,   253,   618),   # Oporto
 ]
-# NOTE: Barcelona/Urgell lat-lon were previously swapped, and Madrid's py was
-# mis-measured (840 -> 813). This table now matches Env/renderer.py and
-# Env/pygame_renderer.py — keep all three in sync.
 
 # ---------------------------------------------------------------------------
 # Coordinate conversion (fitted once at startup)
@@ -124,14 +86,9 @@ NODE_IMAGE_FILE = {
 }
 REINF_DEPOT_FILE = 'Node_Symbols/Reinf_Depot_Symbol.png'
 
-# node_id -> symbol filename overrides
-# (Only the reinforcement depots override the symbol; every other node uses the
-#  symbol implied by its node_type in nodes.csv. CAD/LIS overrides were removed
-#  because they contradicted the data — Cadiz is a regional_capital and Lisboa a
-#  capital, so they now render with the correct, consistently sized symbols.)
 NODE_IMAGE_OVERRIDE = {
-    'VER': REINF_DEPOT_FILE,                                # Verdun  -> reinforcement depot
-    'LJQ': REINF_DEPOT_FILE,                                # La Jonquera -> reinforcement depot
+    'VER': REINF_DEPOT_FILE,   # Verdun  -> reinforcement depot
+    'LJQ': REINF_DEPOT_FILE,   # La Jonquera -> reinforcement depot
 }
 
 # node_type -> on-map zoom factor for its symbol image
@@ -154,8 +111,6 @@ NODE_ZOOM_OVERRIDE = {
 _IMAGE_CACHE = {}
 _TINT_CACHE = {}
 
-# Capitals are painted this colour (RGB). Set to None to disable tinting.
-CAPITAL_TINT = (40, 90, 230)   # blue
 
 def _load_image(filename):
     if filename not in _IMAGE_CACHE:
@@ -163,37 +118,19 @@ def _load_image(filename):
         _IMAGE_CACHE[filename] = np.array(Image.open(path).convert('RGBA'))
     return _IMAGE_CACHE[filename]
 
-def _tint(arr, rgb):
-    """Recolour an RGBA symbol to `rgb`, preserving its shading and transparency.
-    The brightest non-transparent pixel maps to full `rgb`; darker pixels scale
-    down, so the symbol stays recognisable whether the source art is light/dark."""
-    out = arr.copy()
-    alpha = out[..., 3] if out.shape[2] == 4 else np.full(out.shape[:2], 255)
-    lum = out[..., :3].astype(float).mean(axis=2)
-    mask = alpha > 0
-    mx = lum[mask].max() if mask.any() else 255.0
-    v = (lum / (mx or 1.0)).clip(0, 1)[..., None]
-    out[..., :3] = (np.array(rgb, float).reshape(1, 1, 3) * v).clip(0, 255).astype(np.uint8)
-    return out
-
 def node_symbol(node_id, ntype):
     """Return (image array, zoom factor) for the given node."""
     filename = NODE_IMAGE_OVERRIDE.get(node_id, NODE_IMAGE_FILE.get(ntype, NODE_IMAGE_FILE['town']))
     zoom     = NODE_ZOOM_OVERRIDE.get(node_id, NODE_ZOOM.get(ntype, NODE_ZOOM['town']))
-    if ntype == 'town' and CAPITAL_TINT is not None:
-        key = filename + '#tint'
-        if key not in _TINT_CACHE:
-            _TINT_CACHE[key] = _tint(_load_image(filename), CAPITAL_TINT)
-        return _TINT_CACHE[key], zoom
     return _load_image(filename), zoom
 
 # ---------------------------------------------------------------------------
-# Edge style table -- mirrors Env/renderer.py
+# Edge style table
 # ---------------------------------------------------------------------------
 
 # road_type -> (color, linewidth, alpha, linestyle)
 EDGE_STYLE = {
-    'primary':   ('black',   2.0, 0.90, '-'),
+    'primary':   ('black', 2.0, 0.90, '-'),
     'secondary': ('#555555', 1.2, 0.75, '--'),
     'tertiary':  ('#555555', 1.0, 0.65, ':'),
 }
@@ -209,7 +146,7 @@ def main():
     nodes = pd.read_csv(NODES_FILE)
     edges = pd.read_csv(EDGES_FILE)
 
-    # -- Graceful fallback if the CSVs haven't been enriched yet ------------
+    # -- Fallback if the CSVs haven't been enriched yet ------------
     if 'node_type' not in nodes.columns:
         nodes['node_type'] = 'town'
         print("nodes.csv has no 'node_type' column -- run enrich_map.py first.")
@@ -260,10 +197,8 @@ def main():
                              box_alignment=(0.5, 0.5))
         ax.add_artist(ab)
 
-    # (Node name labels intentionally omitted.)
 
     # -- Legend -------------------------------------------------------------------
-    # One compact panel in the BOTTOM-RIGHT listing node symbols then road styles.
     node_legend_order = [
         ('capital',          'Capital'),
         ('regional_capital', 'Regional capital'),
@@ -290,7 +225,7 @@ def main():
     panel_y0 = 0.010
     icon_x   = panel_x0 + 0.020
     text_x   = panel_x0 + 0.040
-    fs       = 5.5                             # much smaller text
+    fs       = 5.5                        
 
     ax.add_patch(mpatches.FancyBboxPatch(
         (panel_x0, panel_y0), panel_w, panel_h,
@@ -327,7 +262,6 @@ def main():
         y -= row_h
 
     # -- Save -----------------------------------------------------------------------
-    # JPG (legacy output) plus LaTeX-friendly high-res PNG and vector-wrapped PDF.
     plt.savefig(OUTPUT_FILE, dpi=150, bbox_inches='tight', facecolor='black')
     png_out = OUTPUT_FILE.rsplit('.', 1)[0] + '.png'
     pdf_out = OUTPUT_FILE.rsplit('.', 1)[0] + '.pdf'

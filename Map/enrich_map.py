@@ -1,14 +1,6 @@
-"""
-enrich_map.py
-Reads nodes.csv and edges.csv from the same folder, then writes enriched versions
-with terrain, node classification, strategic importance, distances, and road type.
-
-Run:  python enrich_map.py
-Output: nodes.csv and edges.csv are overwritten in place.
-"""
-
 import csv
 import math
+from collections import Counter
 from pathlib import Path
 
 HERE = Path(__file__).parent   # same folder as this script
@@ -23,8 +15,6 @@ def haversine(lat1, lon1, lat2, lon2):
     return round(2 * R * math.asin(math.sqrt(a)), 1)
 
 # ── Node attributes ───────────────────────────────────────────────────────────
-# (terra1, terra2, node_type, strategic_importance)
-#
 # terra1 :  F=Flat  R=Rolling  G=Rugged  O=Other/NA
 # terra2 :  B=Bare  M=Mixed    W=Heavily Wooded  D=Desert  O=Other/NA
 # node_type: capital | major_city | city | town | intersection
@@ -306,10 +296,6 @@ def edge_terrain(a, b):
     t2 = a[1] if TERRA2_RANK[a[1]] >= TERRA2_RANK[b[1]] else b[1]
     return t1, t2
 
-def edge_road_type(imp_a, imp_b):
-    """Primary if either endpoint is a city or above (importance >= 3)."""
-    return 'primary' if max(imp_a, imp_b) >= 3 else 'secondary'
-
 # ── Read source CSVs ──────────────────────────────────────────────────────────
 nodes = {}
 with open(HERE / 'nodes.csv', newline='', encoding='utf-8') as f:
@@ -355,7 +341,6 @@ for eid, n1, n2 in edges_raw:
     a1 = NODE_ATTRS.get(n1, FALLBACK)
     a2 = NODE_ATTRS.get(n2, FALLBACK)
     t1, t2    = edge_terrain(a1, a2)
-    road_type = edge_road_type(a1[3], a2[3])
     enriched_edges.append({
         'edge_id':     eid,
         'node1':       n1,
@@ -363,7 +348,6 @@ for eid, n1, n2 in edges_raw:
         'distance_km': dist,
         'terra1':      t1,
         'terra2':      t2,
-        'road_type':   road_type,
     })
 
 # ── Write output CSVs ─────────────────────────────────────────────────────────
@@ -379,7 +363,6 @@ with open(HERE / 'edges.csv', 'w', newline='', encoding='utf-8') as f:
     csv.DictWriter(f, fieldnames=edge_fields).writerows(enriched_edges)
 
 # ── Summary ───────────────────────────────────────────────────────────────────
-from collections import Counter
 tc = Counter(n['node_type']   for n in enriched_nodes)
 rc = Counter(e['road_type']   for e in enriched_edges)
 dv = [e['distance_km']        for e in enriched_edges]
