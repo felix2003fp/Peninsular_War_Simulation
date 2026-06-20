@@ -1,20 +1,3 @@
-"""
-renderer.py
------------
-Live map visualisation for the Peninsular War simulation.
-
-Displays the topographic map with:
-  - Nodes coloured by faction owner  (blue=France, crimson=Allies, grey=Neutral)
-  - Node size scaled by strategic importance (same scheme as visualise_graph.py)
-  - Real nation flags (PNG from Map/) drawn at every army position
-  - Troop-count label beneath each flag
-  - Scoreboard overlay (turn, troops, nodes held)
-  - Battle markers (crossed swords ✕) on nodes that fought this turn
-
-Call renderer.update() after every env.step(). The window refreshes
-without blocking the terminal input loop.
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -27,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+from PIL import Image
 
 if TYPE_CHECKING:
     from .peninsular_war_env import PeninsularWarEnv
@@ -36,11 +20,11 @@ from .config import (
     SUBFACTION_BRITISH, SUBFACTION_SPANISH, SUBFACTION_PORTUGUESE,
 )
 
-# ── Coordinate calibration (mirrors visualise_graph.py) ──────────────────────
+# ── Coordinate calibration ──────────────────────
 
 # Coordinate projection (lat/lon -> native topo-map pixel) is shared with
 # Env/pygame_renderer.py and Map/visualise_graph.py — defined once in
-# Map/map_projection.py. Ensure the project root is importable, then alias.
+# Map/map_projection.py.
 import sys as _sys
 _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in _sys.path:
@@ -52,10 +36,9 @@ from Map.map_projection import latlon_to_pixel as _to_px
 
 def _load_flag(filename: str) -> np.ndarray:
     """
-    Load a flag image from Map/ using Pillow (handles PNG, WebP, JPEG, etc.).
+    Load a flag image from Map.
     Returns a uint8 RGB numpy array.
     """
-    from PIL import Image
     path = Path(__file__).parent.parent / 'Map' / filename
     img  = Image.open(str(path)).convert('RGB').resize((36, 24), Image.LANCZOS)
     return np.array(img, dtype=np.uint8)
@@ -67,30 +50,34 @@ _SPAIN_FLAG    = _load_flag('Flags/Spanish_Flag.png')
 _PORTUGAL_FLAG = _load_flag('Flags/Portuguese_Flag.png')
 
 
-# ── Node symbol images (mirrors Map/visualise_graph.py) ───────────────────────
+# ── Node symbol images ───────────────────────
 
 def _load_node_image(filename: str) -> np.ndarray:
     """Load a node-symbol PNG from Map/ at native resolution, RGBA."""
-    from PIL import Image
     path = Path(__file__).parent.parent / 'Map' / filename
     return np.array(Image.open(str(path)).convert('RGBA'))
 
 
-# node_type → symbol filename (shared, defined in Map/map_projection.py)
 from Map.map_projection import (
     NODE_SYMBOL_FILE as _NODE_IMAGE_FILE,
     REINF_DEPOT_FILE as _REINF_DEPOT_FILE,
 )
 
-# node_id → symbol filename overrides
-# Only depots override the symbol; all other nodes follow their node_type so
+# Only depots override the symbol and zoom; all other nodes follow their node_type so
 # Cádiz (regional_capital) and Lisboa (capital) render with the correct symbols.
 _NODE_IMAGE_OVERRIDE = {
-    'VER': _REINF_DEPOT_FILE,                       # Verdun       → reinforcement depot
-    'LJQ': _REINF_DEPOT_FILE,                       # La Jonquera  → reinforcement depot
+    'VER': _REINF_DEPOT_FILE,
+    'LJQ': _REINF_DEPOT_FILE,
 }
 
-# node_type → on-map zoom factor for its symbol image
+_REINF_DEPOT_ZOOM = 0.068
+
+_NODE_ZOOM_OVERRIDE = {
+    'VER': _REINF_DEPOT_ZOOM,
+    'LJQ': _REINF_DEPOT_ZOOM,
+}
+
+# Larger images for more important nodes
 _NODE_ZOOM = {
     'capital':          0.096,
     'regional_capital': 0.082,
@@ -99,25 +86,19 @@ _NODE_ZOOM = {
     'town':             0.045,
     'intersection':     0.035,
 }
-_REINF_DEPOT_ZOOM = 0.077
 
-# node_id → zoom override (paired with _NODE_IMAGE_OVERRIDE)
-_NODE_ZOOM_OVERRIDE = {
-    'VER': _REINF_DEPOT_ZOOM,
-    'LJQ': _REINF_DEPOT_ZOOM,
-}
 
 _NODE_IMAGE_CACHE: dict[str, np.ndarray] = {}
 _NODE_TINT_CACHE: dict[tuple, np.ndarray] = {}
 
-# Owner → symbol tint colour (RGB). France blue, Allies red, Neutral grey.
+# Colour tint for each faction
 _SYMBOL_TINT = {FRANCE: (65, 105, 225), ALLIES: (196, 30, 58), NEUTRAL: (200, 200, 200)}
 
 
 def _tint(arr: np.ndarray, rgb) -> np.ndarray:
-    """Recolour an RGBA symbol to `rgb`, preserving its shading and transparency.
-    The brightest non-transparent pixel maps to full `rgb`; darker pixels scale
-    down, so the symbol stays recognisable for light or dark source art."""
+    """
+    Recolour each symbol to the rgb of each faction
+    """
     out = arr.copy()
     alpha = out[..., 3] if out.shape[2] == 4 else np.full(out.shape[:2], 255)
     lum = out[..., :3].astype(float).mean(axis=2)
@@ -129,8 +110,9 @@ def _tint(arr: np.ndarray, rgb) -> np.ndarray:
 
 
 def _node_symbol(node_id: str, ntype: str, owner: int | None = None):
-    """Return (image array, zoom factor). If `owner` is given, the symbol is
-    tinted by faction (France blue / Allies red / Neutral grey)."""
+    """
+    Return the image with its corresponding zoom
+    """
     filename = _NODE_IMAGE_OVERRIDE.get(node_id, _NODE_IMAGE_FILE.get(ntype, _NODE_IMAGE_FILE['town']))
     zoom     = _NODE_ZOOM_OVERRIDE.get(node_id, _NODE_ZOOM.get(ntype, _NODE_ZOOM['town']))
     if filename not in _NODE_IMAGE_CACHE:
@@ -143,19 +125,11 @@ def _node_symbol(node_id: str, ntype: str, owner: int | None = None):
         _NODE_TINT_CACHE[key] = _tint(base, _SYMBOL_TINT[owner])
     return _NODE_TINT_CACHE[key], zoom
 
+
 # ── Style tables ──────────────────────────────────────────────────────────────
 
 _NODE_FC = {FRANCE: '#4169E1', ALLIES: '#C41E3A', NEUTRAL: '#CCCCCC'}
 _NODE_EC = {FRANCE: '#1A3A8F', ALLIES: '#7D0000', NEUTRAL: '#888888'}
-
-_NODE_SIZE = {
-    'capital':          300,
-    'regional_capital': 180,
-    'major_city':       100,
-    'city':              55,
-    'town':              24,
-    'intersection':      12,
-}
 
 _EDGE_STYLE = {
     'primary':   ('black',   2.0, 0.90, '-'),
@@ -164,12 +138,10 @@ _EDGE_STYLE = {
 }
 
 
-# ── Renderer class ────────────────────────────────────────────────────────────
 
 class MapRenderer:
     """
-    Initialise once after env.reset(), then call update(battle_log) each turn.
-
+    Initialises once after env.reset()
     Parameters
     ----------
     env : PeninsularWarEnv
@@ -179,7 +151,7 @@ class MapRenderer:
         self.env = env
         root     = Path(__file__).parent.parent
 
-        # ── Static node/edge metadata ─────────────────────────────────────────
+        # Static node/edge metadata
         nodes_df = pd.read_csv(root / 'Map' / 'nodes.csv')
         edges_df = pd.read_csv(root / 'Map' / 'edges.csv')
 
@@ -194,7 +166,7 @@ class MapRenderer:
             self._rtype[(row['node1'], row['node2'])] = rt
             self._rtype[(row['node2'], row['node1'])] = rt
 
-        # ── Pre-compute pixel positions for every node ────────────────────────
+        # Pre-compute pixel positions for every node
         self._px: dict[str, float] = {}
         self._py: dict[str, float] = {}
         for nid in env.node_ids:
@@ -202,7 +174,7 @@ class MapRenderer:
             self._px[nid]  = px
             self._py[nid]  = py
 
-        # ── Set up figure ─────────────────────────────────────────────────────
+        # Set up figure
         plt.ion()
         map_path = root / 'Map' / 'Iber_Pen_Topo_Map.jpg'
         if map_path.exists():
@@ -220,9 +192,9 @@ class MapRenderer:
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         self.ax.axis('off')
         self.ax.set_xlim(0, self._iw)
-        self.ax.set_ylim(self._ih, 0)   # image y-axis: 0 at top
+        self.ax.set_ylim(self._ih, 0)
 
-        # ── Draw permanent background (map + edges) ───────────────────────────
+        # Draw permanent background (map + edges)
         if self._bg is not None:
             self.ax.imshow(self._bg, extent=[0, self._iw, self._ih, 0], zorder=0)
 
@@ -245,11 +217,10 @@ class MapRenderer:
         self.update([])
         plt.show(block=False)
 
-    # ── Public API ────────────────────────────────────────────────────────────
 
     def update(self, battle_log: List[dict] | None = None):
         """
-        Redraw all dynamic elements.  Call after every env.step().
+        Redraws all dynamic elements.  Gets called after every env.step().
 
         Parameters
         ----------
@@ -271,7 +242,7 @@ class MapRenderer:
         self.fig.canvas.draw_idle()
         plt.pause(0.05)
 
-    # ── Internal draw methods ─────────────────────────────────────────────────
+    # Internal draw methods
 
     def _draw_nodes(self):
         env = self.env
@@ -280,7 +251,7 @@ class MapRenderer:
             ntype  = self._ntype.get(nid, 'town')
             px, py = self._px[nid], self._py[nid]
 
-            # Node symbol (PNG), tinted by faction owner
+            # Node symbol, tinted by faction owner
             img_arr, zoom = _node_symbol(nid, ntype, owner)
             imbox = OffsetImage(img_arr, zoom=zoom)
             ab = AnnotationBbox(imbox, (px, py), frameon=False, zorder=3,
@@ -288,7 +259,7 @@ class MapRenderer:
             self.ax.add_artist(ab)
             self._dyn.append(ab)
 
-            # Node ID label (skip intersections)
+            # Node ID label (except intersections)
             if ntype != 'intersection':
                 txt = self.ax.text(
                     px, py + 10, nid,
@@ -315,13 +286,15 @@ class MapRenderer:
 
             if f_men > 0 or f_arty > 0:
                 self._add_flag(_FRANCE_FLAG, px - 8, py - 14, zoom=0.5)
-                self._add_label(px - 8, py - 14, f_men, '#4169E1')
+                self._add_label(px - 8, py - 14, f_men,
+                                _NODE_FC[FRANCE], _NODE_EC[FRANCE])
             if a_men > 0 or a_arty > 0:
                 sf   = int(env.sub_faction[i])
                 flag = _allied_flag.get(sf, _UK_FLAG)
                 offset = 10 if (f_men > 0 or f_arty > 0) else 0
                 self._add_flag(flag, px + offset, py - 14, zoom=0.5)
-                self._add_label(px + offset, py - 14, a_men, '#C41E3A')
+                self._add_label(px + offset, py - 14, a_men,
+                                _NODE_FC[ALLIES], _NODE_EC[ALLIES])
 
     def _add_flag(self, img: np.ndarray, x: float, y: float, zoom: float):
         im = OffsetImage(img, zoom=zoom, resample=True)
@@ -330,22 +303,18 @@ class MapRenderer:
         self.ax.add_artist(ab)
         self._dyn.append(ab)
 
-    def _add_label(self, x: float, y: float, men: int, bg: str):
-        # (x, y) is the flag's bottom-centre anchor. Show only the men count
-        # (infantry + cavalry; artillery is omitted) and place it just to the
-        # RIGHT of the flag, vertically centred on it. The position is given as
-        # an offset in points so it stays correct regardless of the data zoom.
+    def _add_label(self, x: float, y: float, men: int, fc: str, ec: str):
         label = f'{men // 1000}k' if men >= 1000 else str(men)
         txt = self.ax.annotate(
             label, xy=(x, y), xytext=(12, 6), textcoords='offset points',
             fontsize=5.5, color='white', weight='bold',
             ha='left', va='center', zorder=6,
-            bbox=dict(boxstyle='round,pad=0.15', fc=bg, ec='none', alpha=0.80),
+            bbox=dict(boxstyle='round,pad=0.15', fc=fc, ec=ec, lw=0.6, alpha=0.80),
         )
         self._dyn.append(txt)
 
     def _draw_battle_markers(self, battle_log: List[dict]):
-        """Mark nodes where a battle occurred this turn with a red ✕."""
+        """Marks nodes where a battle occurred this turn."""
         for b in battle_log:
             nid = b['node']
             if nid not in self._px:
