@@ -37,9 +37,7 @@ from .config import (
     MAX_ARMIES, MIN_ARMY_SIZE,
 )
 from .battle_model import (
-    resolve_battle,
-    _occ_turns_to_post1, _derive_techa, _derive_morala,
-    _derive_logsa, _derive_momnta, _derive_inita, _derive_surpa,
+    resolve_battle
 )
 
 
@@ -50,7 +48,7 @@ def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     p1, p2 = math.radians(lat1), math.radians(lat2)
     dp = math.radians(lat2 - lat1)
     dl = math.radians(lon2 - lon1)
-    a  = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * R * math.asin(math.sqrt(a))
 
 
@@ -157,9 +155,9 @@ class PeninsularWarEnv(gym.Env):
         }
 
         # Counts of nodes by SI tier (used in dominance check)
-        self._n_si_high  = int(np.sum(self._si_raw >= 4))   # SI = 4,5,6
+        self._n_si_high = int(np.sum(self._si_raw >= 4))   # SI = 4,5,6
         self._n_si_three = int(np.sum(self._si_raw == 3))   # SI = 3
-        self._n_si_two   = int(np.sum(self._si_raw == 2))   # SI = 2
+        self._n_si_two = int(np.sum(self._si_raw == 2))   # SI = 2
 
         # Reinforcement depot node-index sets (used by observation builder)
         self._france_depot_nodes: frozenset = frozenset(
@@ -186,7 +184,7 @@ class PeninsularWarEnv(gym.Env):
         self.neighbour_list: Dict[str, List[Optional[str]]] = {}
         self.neighbour_dist: Dict[str, List[Optional[float]]] = {}
         for nid in self.node_ids:
-            nbrs  = raw_nbrs[nid][:MAX_DEGREE]
+            nbrs = raw_nbrs[nid][:MAX_DEGREE]
             dists = [raw_dist.get((nid, nbr), 1.0) for nbr in nbrs]
             self.neighbour_list[nid] = nbrs  + [None] * (MAX_DEGREE - len(nbrs))
             self.neighbour_dist[nid] = dists + [None] * (MAX_DEGREE - len(dists))
@@ -211,17 +209,17 @@ class PeninsularWarEnv(gym.Env):
 
         self.action_space = spaces.MultiDiscrete([2 * MAX_DEGREE + 1] * MAX_ARMIES)
 
-        self.owner            = np.full(self.N, NEUTRAL, dtype=np.int8)
+        self.owner = np.full(self.N, NEUTRAL, dtype=np.int8)
         self.france_infantry  = np.zeros(self.N, dtype=np.int32)
-        self.france_cavalry   = np.zeros(self.N, dtype=np.int32)
+        self.france_cavalry = np.zeros(self.N, dtype=np.int32)
         self.france_artillery = np.zeros(self.N, dtype=np.int32)
-        self.allies_infantry  = np.zeros(self.N, dtype=np.int32)
-        self.allies_cavalry   = np.zeros(self.N, dtype=np.int32)
+        self.allies_infantry = np.zeros(self.N, dtype=np.int32)
+        self.allies_cavalry = np.zeros(self.N, dtype=np.int32)
         self.allies_artillery = np.zeros(self.N, dtype=np.int32)
 
-        self.occ_turns        = np.zeros(self.N, dtype=np.int32)
+        self.occ_turns = np.zeros(self.N, dtype=np.int32)
         self.current_garrison = np.zeros(self.N, dtype=np.int32)
-        self.sub_faction      = np.full(self.N, SUBFACTION_NONE, dtype=np.int8)
+        self.sub_faction = np.full(self.N, SUBFACTION_NONE, dtype=np.int8)
         self.france_commander: List[Optional[str]] = [None] * self.N
         self.allies_commander: List[Optional[str]] = [None] * self.N
 
@@ -258,16 +256,16 @@ class PeninsularWarEnv(gym.Env):
 
         # All nodes default to ALLIES
         # French army placements (below) will flip their nodes to FRANCE
-        self.owner            = np.full(self.N, ALLIES, dtype=np.int8)
-        self.france_infantry  = np.zeros(self.N, dtype=np.int32)
-        self.france_cavalry   = np.zeros(self.N, dtype=np.int32)
+        self.owner = np.full(self.N, ALLIES, dtype=np.int8)
+        self.france_infantry = np.zeros(self.N, dtype=np.int32)
+        self.france_cavalry = np.zeros(self.N, dtype=np.int32)
         self.france_artillery = np.zeros(self.N, dtype=np.int32)
-        self.allies_infantry  = np.zeros(self.N, dtype=np.int32)
-        self.allies_cavalry   = np.zeros(self.N, dtype=np.int32)
+        self.allies_infantry = np.zeros(self.N, dtype=np.int32)
+        self.allies_cavalry = np.zeros(self.N, dtype=np.int32)
         self.allies_artillery = np.zeros(self.N, dtype=np.int32)
-        self.occ_turns        = np.zeros(self.N, dtype=np.int32)
+        self.occ_turns = np.zeros(self.N, dtype=np.int32)
         self.current_garrison = self._garrison_cap.copy()
-        self.sub_faction      = np.full(self.N, SUBFACTION_NONE, dtype=np.int8)
+        self.sub_faction = np.full(self.N, SUBFACTION_NONE, dtype=np.int8)
         self.france_commander = [None] * self.N
         self.allies_commander = [None] * self.N
         self.france_army_history = {}
@@ -287,8 +285,8 @@ class PeninsularWarEnv(gym.Env):
                                   if c not in france_assigned]
         self.france_gone = set()
 
-        allies_assigned   = set(ALLIES_START_COMMANDERS.values()) - {'UNKNOWN'}
-        _allies_not_yet   = {'WELLINGTON'}
+        allies_assigned = set(ALLIES_START_COMMANDERS.values()) - {'UNKNOWN'}
+        _allies_not_yet = {'WELLINGTON'}
         self.allies_available = [c for c in ALLIES_COMMANDER_POOL
                                   if c not in allies_assigned and c not in _allies_not_yet]
         self.allies_gone = set()
@@ -298,34 +296,34 @@ class PeninsularWarEnv(gym.Env):
         for nid in FRANCE_START_NODES:
             if nid not in self.node_idx:
                 continue
-            i    = self.node_idx[nid]
+            i = self.node_idx[nid]
             size = FRANCE_START_SIZES.get(nid, INITIAL_ARMY_SIZE)
-            sf   = SUBFACTION_NONE
+            sf = SUBFACTION_NONE
             inf, cav, arty = self._split_army(size, FRANCE, sf)
-            self.france_infantry[i]  = inf
-            self.france_cavalry[i]   = cav
+            self.france_infantry[i] = inf
+            self.france_cavalry[i] = cav
             self.france_artillery[i] = arty
-            self.owner[i]            = FRANCE
+            self.owner[i] = FRANCE
             self.france_commander[i] = FRANCE_START_COMMANDERS.get(nid, 'UNKNOWN')
             self.current_garrison[i] = self._garrison_cap[i]
 
         for nid in ALLIES_START_NODES:
             if nid not in self.node_idx:
                 continue
-            i    = self.node_idx[nid]
+            i = self.node_idx[nid]
             size = ALLIES_START_SIZES.get(nid, INITIAL_ARMY_SIZE)
-            sf   = ALLIES_START_SUBFACTIONS.get(nid, SUBFACTION_NONE)
+            sf = ALLIES_START_SUBFACTIONS.get(nid, SUBFACTION_NONE)
             inf, cav, arty = self._split_army(size, ALLIES, sf)
-            self.allies_infantry[i]  = inf
-            self.allies_cavalry[i]   = cav
+            self.allies_infantry[i] = inf
+            self.allies_cavalry[i] = cav
             self.allies_artillery[i] = arty
-            self.owner[i]            = ALLIES
-            self.sub_faction[i]      = sf
+            self.owner[i] = ALLIES
+            self.sub_faction[i] = sf
             self.allies_commander[i] = ALLIES_START_COMMANDERS.get(nid, 'UNKNOWN')
             self.current_garrison[i] = self._garrison_cap[i]
 
         # Get observations for both factions
-        obs  = {'france': self._get_obs(FRANCE), 'allies': self._get_obs(ALLIES)}
+        obs = {'france': self._get_obs(FRANCE), 'allies': self._get_obs(ALLIES)}
         info = self._get_info()
         return obs, info
 
@@ -385,12 +383,12 @@ class PeninsularWarEnv(gym.Env):
 
         # 8. Termination checks
         france_alive = int(np.sum(self.france_infantry + self.france_cavalry + self.france_artillery)) > 0
-        allies_alive  = int(np.sum(self.allies_infantry + self.allies_cavalry + self.allies_artillery)) > 0
-        dominance     = self._check_dominance()
-        terminated    = (not france_alive or not allies_alive) or (dominance != NEUTRAL)
-        truncated     = self.turn >= MAX_TURNS
+        allies_alive = int(np.sum(self.allies_infantry + self.allies_cavalry + self.allies_artillery)) > 0
+        dominance = self._check_dominance()
+        terminated = (not france_alive or not allies_alive) or (dominance != NEUTRAL)
+        truncated = self.turn >= MAX_TURNS
 
-        obs  = {'france': self._get_obs(FRANCE), 'allies': self._get_obs(ALLIES)}
+        obs = {'france': self._get_obs(FRANCE), 'allies': self._get_obs(ALLIES)}
         info = self._get_info()
         info['dominance_winner'] = dominance   # FRANCE / ALLIES
 
@@ -403,16 +401,16 @@ class PeninsularWarEnv(gym.Env):
         # (turn 313 reached) so the agent is always rewarded for the final
         # territorial situation, regardless of how the game ended.
         if terminated or truncated:
-            score_diff    = self._terminal_score()  # France - Allies
+            score_diff = self._terminal_score()  # France - Allies
             france_r += score_diff
-            allies_r  -= score_diff
+            allies_r -= score_diff
 
         # Depot penalty is non-zero-sum: each agent penalised only for its own
         france_r -= self._depot_penalty(FRANCE)
         allies_r -= self._depot_penalty(ALLIES)
         rewards = {'france': france_r, 'allies': allies_r}
         info['battles'] = battle_log
-        info['sieges']  = siege_log
+        info['sieges'] = siege_log
 
         if self.render_mode == 'human':
             self.render()
@@ -435,7 +433,7 @@ class PeninsularWarEnv(gym.Env):
         self._vprint(f"\n  France armies:")
         for i in range(self.N):
             if self._has_army(FRANCE, i):
-                cmd  = self.france_commander[i] or 'UNKNOWN'
+                cmd = self.france_commander[i] or 'UNKNOWN'
                 post = self._post_label(i)
                 self._vprint(f"    {self.node_ids[i]:4s}  "
                       f"inf={self.france_infantry[i]:>7,}  "
@@ -445,8 +443,8 @@ class PeninsularWarEnv(gym.Env):
         self._vprint(f"\n  Allied armies:")
         for i in range(self.N):
             if self._has_army(ALLIES, i):
-                cmd  = self.allies_commander[i] or 'UNKNOWN'
-                sf   = {SUBFACTION_BRITISH: 'BR', SUBFACTION_SPANISH: 'SP',
+                cmd = self.allies_commander[i] or 'UNKNOWN'
+                sf = {SUBFACTION_BRITISH: 'BR', SUBFACTION_SPANISH: 'SP',
                         SUBFACTION_PORTUGUESE: 'PT'}.get(int(self.sub_faction[i]), '??')
                 post = self._post_label(i)
                 self._vprint(f"    {self.node_ids[i]:4s}  "
@@ -460,19 +458,19 @@ class PeninsularWarEnv(gym.Env):
         self._vprint(f"\n  Reinforcement pools  (rate: FR {f_rate}/depot  AL {a_rate}/depot"
               f"  threshold: {REINF_SPAWN_THRESHOLD:,}):")
         for nid in FRANCE_REINF_DEPOTS:
-            pool    = self.france_reinf_pool.get(nid, 0)
-            i       = self.node_idx.get(nid, -1)
+            pool = self.france_reinf_pool.get(nid, 0)
+            i = self.node_idx.get(nid, -1)
             blocked = (i >= 0 and self.owner[i] == ALLIES)
-            pct     = pool / REINF_SPAWN_THRESHOLD * 100
-            tag     = '  *** CAPTURED — no accumulation ***' if blocked else \
+            pct = pool / REINF_SPAWN_THRESHOLD * 100
+            tag = '  *** CAPTURED — no accumulation ***' if blocked else \
                       f'  ({pct:>5.1f}% of spawn threshold)'
             self._vprint(f"    FR depot {nid:4s}  pool={pool:>7,}{tag}")
         for nid in ALLIES_REINF_DEPOTS:
-            pool    = self.allies_reinf_pool.get(nid, 0)
-            i       = self.node_idx.get(nid, -1)
+            pool = self.allies_reinf_pool.get(nid, 0)
+            i = self.node_idx.get(nid, -1)
             blocked = (i >= 0 and self.owner[i] == FRANCE)
-            pct     = pool / REINF_SPAWN_THRESHOLD * 100
-            tag     = '  *** CAPTURED — no accumulation ***' if blocked else \
+            pct = pool / REINF_SPAWN_THRESHOLD * 100
+            tag = '  *** CAPTURED — no accumulation ***' if blocked else \
                       f'  ({pct:>5.1f}% of spawn threshold)'
             self._vprint(f"    AL depot {nid:4s}  pool={pool:>7,}{tag}")
         self._vprint(line)
@@ -499,9 +497,9 @@ class PeninsularWarEnv(gym.Env):
 
         Use _active_army_slots(faction)[slot] to recover the node index for a slot.
         """
-        active    = self._active_army_slots(faction)
+        active = self._active_army_slots(faction)
         can_split = len(active) < MAX_ARMIES
-        result    = {}
+        result = {}
         for slot, i in enumerate(active):
             # An army is only allowed to split if it has at least
             # 2*MIN_ARMY_SIZE men
@@ -550,12 +548,12 @@ class PeninsularWarEnv(gym.Env):
         cav_cas = round(men_cas * CAVALRY_CASUALTY_RATIO)
         inf_cas = men_cas - cav_cas
         if faction == FRANCE:
-            self.france_cavalry[i]   = max(0, int(self.france_cavalry[i])   - cav_cas)
-            self.france_infantry[i]  = max(0, int(self.france_infantry[i])  - inf_cas)
+            self.france_cavalry[i] = max(0, int(self.france_cavalry[i])   - cav_cas)
+            self.france_infantry[i] = max(0, int(self.france_infantry[i])  - inf_cas)
             self.france_artillery[i] = max(0, int(self.france_artillery[i]) - arty_cas)
         else:
-            self.allies_cavalry[i]   = max(0, int(self.allies_cavalry[i])   - cav_cas)
-            self.allies_infantry[i]  = max(0, int(self.allies_infantry[i])  - inf_cas)
+            self.allies_cavalry[i] = max(0, int(self.allies_cavalry[i])   - cav_cas)
+            self.allies_infantry[i] = max(0, int(self.allies_infantry[i])  - inf_cas)
             self.allies_artillery[i] = max(0, int(self.allies_artillery[i]) - arty_cas)
 
     def _march_attrition(
@@ -580,10 +578,10 @@ class PeninsularWarEnv(gym.Env):
         if src == dst:
             return inf, cav, arty
 
-        src_id    = self.node_ids[src]
-        dst_id    = self.node_ids[dst]
+        src_id = self.node_ids[src]
+        dst_id = self.node_ids[dst]
         road_type = self._road_type.get((src_id, dst_id), 'primary')
-        men       = inf + cav
+        men = inf + cav
 
         rate = 0.0
         if road_type == 'tertiary' and men > MARCH_TERTIARY_THRESHOLD:
@@ -604,12 +602,12 @@ class PeninsularWarEnv(gym.Env):
         Zero all unit arrays for one faction at one node.
         """
         if faction == FRANCE:
-            self.france_infantry[i]  = 0
-            self.france_cavalry[i]   = 0
+            self.france_infantry[i] = 0
+            self.france_cavalry[i] = 0
             self.france_artillery[i] = 0
         else:
-            self.allies_infantry[i]  = 0
-            self.allies_cavalry[i]   = 0
+            self.allies_infantry[i] = 0
+            self.allies_cavalry[i] = 0
             self.allies_artillery[i] = 0
 
     def _eliminate_remnant(self, faction: int, i: int, cause: str = '') -> bool:
@@ -700,28 +698,28 @@ class PeninsularWarEnv(gym.Env):
             hist     = self.allies_army_history
 
         # Snapshot retreating army
-        r_inf  = int(inf_arr[from_idx])
-        r_cav  = int(cav_arr[from_idx])
+        r_inf = int(inf_arr[from_idx])
+        r_cav = int(cav_arr[from_idx])
         r_arty = int(arty_arr[from_idx])
-        r_cmd  = cmd_arr[from_idx]
-        r_sf   = int(self.sub_faction[from_idx]) if faction == ALLIES else SUBFACTION_NONE
+        r_cmd = cmd_arr[from_idx]
+        r_sf = int(self.sub_faction[from_idx]) if faction == ALLIES else SUBFACTION_NONE
         r_hist = list(hist.get(from_idx, []))
-        r_men  = r_inf + r_cav
+        r_men = r_inf + r_cav
 
         existing_men = int(inf_arr[to_idx]) + int(cav_arr[to_idx])
 
         # Clear source
-        inf_arr[from_idx]  = 0
-        cav_arr[from_idx]  = 0
+        inf_arr[from_idx] = 0
+        cav_arr[from_idx] = 0
         arty_arr[from_idx] = 0
-        cmd_arr[from_idx]  = None
+        cmd_arr[from_idx] = None
         if faction == ALLIES:
             self.sub_faction[from_idx] = SUBFACTION_NONE
         hist.pop(from_idx, None)
 
         # Merge into destination
-        inf_arr[to_idx]  += r_inf
-        cav_arr[to_idx]  += r_cav
+        inf_arr[to_idx] += r_inf
+        cav_arr[to_idx] += r_cav
         arty_arr[to_idx] += r_arty
 
         existing_cmd = cmd_arr[to_idx]
@@ -778,27 +776,27 @@ class PeninsularWarEnv(gym.Env):
             return   # Army was completely destroyed by casualties, nothing to move
 
         if faction == FRANCE:
-            inf_arr  = self.france_infantry
-            cav_arr  = self.france_cavalry
+            inf_arr = self.france_infantry
+            cav_arr = self.france_cavalry
             arty_arr = self.france_artillery
-            cmd_arr  = self.france_commander
-            hist     = self.france_army_history
+            cmd_arr = self.france_commander
+            hist = self.france_army_history
         else:
-            inf_arr  = self.allies_infantry
-            cav_arr  = self.allies_cavalry
+            inf_arr = self.allies_infantry
+            cav_arr = self.allies_cavalry
             arty_arr = self.allies_artillery
-            cmd_arr  = self.allies_commander
-            hist     = self.allies_army_history
+            cmd_arr = self.allies_commander
+            hist = self.allies_army_history
 
         # Move at most what the snapshot asked for (just for safety)
-        move_inf  = min(r_inf,  int(inf_arr[from_idx]))
-        move_cav  = min(r_cav,  int(cav_arr[from_idx]))
+        move_inf = min(r_inf,  int(inf_arr[from_idx]))
+        move_cav = min(r_cav,  int(cav_arr[from_idx]))
         move_arty = min(r_arty, int(arty_arr[from_idx]))
-        move_men  = move_inf + move_cav
+        move_men = move_inf + move_cav
 
         # Subtract snapshotted amounts from source
-        inf_arr[from_idx]  -= move_inf
-        cav_arr[from_idx]  -= move_cav
+        inf_arr[from_idx] -= move_inf
+        cav_arr[from_idx] -= move_cav
         arty_arr[from_idx] -= move_arty
 
         # If source is now empty, clean up its metadata
@@ -813,8 +811,8 @@ class PeninsularWarEnv(gym.Env):
         existing_men = int(inf_arr[to_idx]) + int(cav_arr[to_idx])
         existing_cmd = cmd_arr[to_idx]
 
-        inf_arr[to_idx]  += move_inf
-        cav_arr[to_idx]  += move_cav
+        inf_arr[to_idx] += move_inf
+        cav_arr[to_idx] += move_cav
         arty_arr[to_idx] += move_arty
 
         # Commander: most senior leads the merged force
@@ -853,25 +851,25 @@ class PeninsularWarEnv(gym.Env):
                                            keep 75% in place.Blocked (treated as stay) 
                                            if faction is already at MAX_ARMIES armies.
         """
-        active     = self._active_army_slots(faction)
+        active = self._active_army_slots(faction)
         army_count = len(active)
         moves: List[Tuple[int, int, int, int, int, bool]] = []
 
         if faction == FRANCE:
-            inf_arr  = self.france_infantry
-            cav_arr  = self.france_cavalry
+            inf_arr = self.france_infantry
+            cav_arr = self.france_cavalry
             arty_arr = self.france_artillery
         else:
-            inf_arr  = self.allies_infantry
-            cav_arr  = self.allies_cavalry
+            inf_arr = self.allies_infantry
+            cav_arr = self.allies_cavalry
             arty_arr = self.allies_artillery
 
         for slot, i in enumerate(active):
             direction = int(action[slot])
-            inf  = int(inf_arr[i])
-            cav  = int(cav_arr[i])
+            inf = int(inf_arr[i])
+            cav = int(cav_arr[i])
             arty = int(arty_arr[i])
-            nid  = self.node_ids[i]
+            nid = self.node_ids[i]
 
             if direction == 0:
                 # Stay — all troops remain
@@ -895,11 +893,11 @@ class PeninsularWarEnv(gym.Env):
                     moves.append((i, dst, inf, cav, arty, False))
                 else:
                     # 25% detachment goes forward, 75% main body stays
-                    det_inf  = inf  // 4
-                    det_cav  = cav  // 4
+                    det_inf = inf  // 4
+                    det_cav = cav  // 4
                     det_arty = arty // 4
-                    main_inf  = inf  - det_inf
-                    main_cav  = cav  - det_cav
+                    main_inf = inf  - det_inf
+                    main_cav = cav  - det_cav
                     main_arty = arty - det_arty
                     moves.append((i, dst, det_inf,  det_cav,  det_arty,  True))   # detachment
                     moves.append((i, i,   main_inf, main_cav, main_arty, False))  # main body stays
@@ -920,17 +918,17 @@ class PeninsularWarEnv(gym.Env):
           is_detachment=False -> full army or main body; largest non-detachment wins metadata.
         """
         if faction == FRANCE:
-            inf_arr  = self.france_infantry
-            cav_arr  = self.france_cavalry
+            inf_arr = self.france_infantry
+            cav_arr = self.france_cavalry
             arty_arr = self.france_artillery
-            cmd_arr  = self.france_commander
-            hist     = self.france_army_history
+            cmd_arr = self.france_commander
+            hist = self.france_army_history
         else:
-            inf_arr  = self.allies_infantry
-            cav_arr  = self.allies_cavalry
+            inf_arr = self.allies_infantry
+            cav_arr = self.allies_cavalry
             arty_arr = self.allies_artillery
-            cmd_arr  = self.allies_commander
-            hist     = self.allies_army_history
+            cmd_arr = self.allies_commander
+            hist = self.allies_army_history
 
         # Snapshot metadata before clearing (source positions)
         src_meta: Dict[int, Tuple[str, int, list]] = {}
@@ -946,8 +944,8 @@ class PeninsularWarEnv(gym.Env):
         cleared: set = set()
         for src, dst, inf, cav, arty, is_det in moves:
             if src not in cleared:
-                inf_arr[src]  = 0
-                cav_arr[src]  = 0
+                inf_arr[src] = 0
+                cav_arr[src] = 0
                 arty_arr[src] = 0
                 if faction == ALLIES:
                     self.sub_faction[src] = SUBFACTION_NONE
@@ -974,13 +972,13 @@ class PeninsularWarEnv(gym.Env):
         for src, dst, inf, cav, arty, is_det in moves:
             # Road-march attrition: large armies on secondary/tertiary roads
             # lose a fraction of men before arriving at the destination.
-            men_pre        = inf + cav
+            men_pre = inf + cav
             inf, cav, arty = self._march_attrition(inf, cav, arty, src, dst)
             if inf + cav < men_pre:
                 attrition_hit.add(dst)
 
-            inf_arr[dst]  += inf
-            cav_arr[dst]  += cav
+            inf_arr[dst] += inf
+            cav_arr[dst] += cav
             arty_arr[dst] += arty
             men = inf + cav
             cmd, sf, h = src_meta[src]
@@ -1102,11 +1100,10 @@ class PeninsularWarEnv(gym.Env):
         deposited there first.
 
         Returns
-        -------
-        log            : list of battle dicts (same schema as _resolve_battles)
-        cross_f_srcs   : France source-node indices involved
-        cross_a_srcs   : Allies source-node indices involved
-        pending_moves  : deferred (faction, from_idx, to_idx) retreat/advance pairs
+        log: list of battle dicts (same schema as _resolve_battles)
+        cross_f_srcs: France source-node indices involved
+        cross_a_srcs: Allies source-node indices involved
+        pending_moves: deferred (faction, from_idx, to_idx) retreat/advance pairs
         """
         # Build lookup for allied moves: (src, dst) → (src, dst)
         # Only "move all" (is_det=False, src!=dst) moves can trigger a crossing.
@@ -1138,11 +1135,11 @@ class PeninsularWarEnv(gym.Env):
         pending_moves: List[Tuple] = []
         for f_src, f_dst, a_src, a_dst in crossing_pairs:
             # Troops are still at their source positions
-            f_inf  = int(self.france_infantry[f_src])
-            f_cav  = int(self.france_cavalry[f_src])
+            f_inf = int(self.france_infantry[f_src])
+            f_cav = int(self.france_cavalry[f_src])
             f_arty = int(self.france_artillery[f_src])
-            a_inf  = int(self.allies_infantry[a_src])
-            a_cav  = int(self.allies_cavalry[a_src])
+            a_inf = int(self.allies_infantry[a_src])
+            a_cav = int(self.allies_cavalry[a_src])
             a_arty = int(self.allies_artillery[a_src])
 
             f_men = f_inf + f_cav
@@ -1150,18 +1147,18 @@ class PeninsularWarEnv(gym.Env):
 
             # Attacker = fewer men; battle at defender's source node
             if f_men <= a_men:
-                attacker    = FRANCE
+                attacker = FRANCE
                 att_src_idx = f_src
                 def_src_idx = a_src   # battle node
                 def_dst_idx = a_dst   # where defender was heading
             else:
-                attacker    = ALLIES
+                attacker = ALLIES
                 att_src_idx = a_src
                 def_src_idx = f_src
                 def_dst_idx = f_dst 
 
             battle_idx = def_src_idx
-            nid        = self.node_ids[battle_idx]
+            nid = self.node_ids[battle_idx]
 
             # Sub-factions (based on each army's source position)
             att_sf = SUBFACTION_NONE if attacker == FRANCE else int(self.sub_faction[a_src])
@@ -1174,12 +1171,12 @@ class PeninsularWarEnv(gym.Env):
                       else (self.france_commander[f_src] or 'UNKNOWN')
 
             # Army histories
-            att_hist  = list(self.france_army_history.get(f_src, []) if attacker == FRANCE
+            att_hist = list(self.france_army_history.get(f_src, []) if attacker == FRANCE
                              else self.allies_army_history.get(a_src, []))
-            def_hist  = list(self.allies_army_history.get(a_src, []) if attacker == FRANCE
+            def_hist = list(self.allies_army_history.get(a_src, []) if attacker == FRANCE
                              else self.france_army_history.get(f_src, []))
-            att_wins  = sum(att_hist); att_total = len(att_hist)
-            def_wins  = sum(def_hist); def_total = len(def_hist)
+            att_wins = sum(att_hist); att_total = len(att_hist)
+            def_wins = sum(def_hist); def_total = len(def_hist)
 
             # Faction histories
             f_fact = list(self.france_faction_history)
@@ -1198,37 +1195,37 @@ class PeninsularWarEnv(gym.Env):
             road_type = 'primary'
 
             winner, f_men_cas, a_men_cas, f_arty_cas, a_arty_cas = resolve_battle(
-                france_infantry     = f_inf,
-                france_cavalry      = f_cav,
-                france_artillery    = f_arty,
-                allies_infantry     = a_inf,
-                allies_cavalry      = a_cav,
-                allies_artillery    = a_arty,
-                terra1              = self._terra1[nid],
-                terra2              = self._terra2[nid],
-                occ_turns           = 0,           # HD — defender had already left
-                attacker_faction    = attacker,
+                france_infantry = f_inf,
+                france_cavalry = f_cav,
+                france_artillery = f_arty,
+                allies_infantry = a_inf,
+                allies_cavalry = a_cav,
+                allies_artillery = a_arty,
+                terra1 = self._terra1[nid],
+                terra2 = self._terra2[nid],
+                occ_turns = 0,           # HD — defender had already left
+                attacker_faction = attacker,
                 attacker_subfaction = att_sf,
                 defender_subfaction = def_sf,
-                att_commander       = att_cmd,
-                def_commander       = def_cmd,
-                road_type           = road_type,
-                att_supply_dist     = att_sup,
-                def_supply_dist     = def_sup,
-                att_army_wins       = att_wins,
-                att_army_total      = att_total,
-                def_army_wins       = def_wins,
-                def_army_total      = def_total,
-                att_faction_wins    = att_fw,
-                att_faction_total   = att_ft,
-                def_faction_wins    = def_fw,
-                def_faction_total   = def_ft,
+                att_commander = att_cmd,
+                def_commander = def_cmd,
+                road_type = road_type,
+                att_supply_dist = att_sup,
+                def_supply_dist = def_sup,
+                att_army_wins = att_wins,
+                att_army_total = att_total,
+                def_army_wins = def_wins,
+                def_army_total = def_total,
+                att_faction_wins = att_fw,
+                att_faction_total = att_ft,
+                def_faction_wins = def_fw,
+                def_faction_total = def_ft,
             )
 
             # Verbose debug print
-            _att_q    = COMMANDER_QUALITY.get(att_cmd.upper(), COMMANDER_QUALITY_DEFAULT)
-            _def_q    = COMMANDER_QUALITY.get(def_cmd.upper(), COMMANDER_QUALITY_DEFAULT)
-            _sf_name  = {-1: 'French', 0: 'British', 1: 'Spanish', 2: 'Portuguese'}
+            _att_q = COMMANDER_QUALITY.get(att_cmd.upper(), COMMANDER_QUALITY_DEFAULT)
+            _def_q = COMMANDER_QUALITY.get(def_cmd.upper(), COMMANDER_QUALITY_DEFAULT)
+            _sf_name = {-1: 'French', 0: 'British', 1: 'Spanish', 2: 'Portuguese'}
             self._vprint(
                 f"\n{'='*62}\n"
                 f"  CROSSING BATTLE at {nid}  (turn {self.turn})\n"
@@ -1262,16 +1259,16 @@ class PeninsularWarEnv(gym.Env):
             f_cmd_died = False
             a_cmd_died = False
 
-            winner_src     = f_src if winner == FRANCE else a_src
-            loser_src      = a_src if winner == FRANCE else f_src
-            loser          = ALLIES if winner == FRANCE else FRANCE
+            winner_src = f_src if winner == FRANCE else a_src
+            loser_src = a_src if winner == FRANCE else f_src
+            loser = ALLIES if winner == FRANCE else FRANCE
 
             winner_cmd_arr = self.france_commander if winner == FRANCE else self.allies_commander
-            loser_cmd_arr  = self.allies_commander if winner == FRANCE else self.france_commander
-            winner_gone    = self.france_gone if winner == FRANCE else self.allies_gone
-            loser_gone     = self.allies_gone if winner == FRANCE else self.france_gone
+            loser_cmd_arr = self.allies_commander if winner == FRANCE else self.france_commander
+            winner_gone = self.france_gone if winner == FRANCE else self.allies_gone
+            loser_gone = self.allies_gone if winner == FRANCE else self.france_gone
 
-            loser_cmd       = loser_cmd_arr[loser_src]
+            loser_cmd = loser_cmd_arr[loser_src]
             loser_cmd_alive = True
             if loser_cmd and loser_cmd != 'UNKNOWN':
                 if self.np_random.random() < COMMANDER_DEATH_PROB:
@@ -1313,7 +1310,7 @@ class PeninsularWarEnv(gym.Env):
 
             # Loser retreats to a neighbour of their own source node
             # The battle was midway — the loser never reached their destination
-            loser_name   = 'France' if loser == FRANCE else 'Allies'
+            loser_name = 'France' if loser == FRANCE else 'Allies'
             retreat_node = None
             if not self._has_army(loser, loser_src):
                 self._vprint(f"  Retreat  : {loser_name} DESTROYED by casualties")
@@ -1333,15 +1330,15 @@ class PeninsularWarEnv(gym.Env):
                 loser_cmd_arr[loser_src] = None
             else:
                 # Snapshot loser state at this moment
-                _l_inf_arr  = self.allies_infantry  if loser == ALLIES else self.france_infantry
-                _l_cav_arr  = self.allies_cavalry   if loser == ALLIES else self.france_cavalry
+                _l_inf_arr = self.allies_infantry  if loser == ALLIES else self.france_infantry
+                _l_cav_arr = self.allies_cavalry   if loser == ALLIES else self.france_cavalry
                 _l_arty_arr = self.allies_artillery if loser == ALLIES else self.france_artillery
                 _l_hist_map = self.allies_army_history if loser == ALLIES else self.france_army_history
-                snap_l_inf  = int(_l_inf_arr[loser_src])
-                snap_l_cav  = int(_l_cav_arr[loser_src])
+                snap_l_inf = int(_l_inf_arr[loser_src])
+                snap_l_cav = int(_l_cav_arr[loser_src])
                 snap_l_arty = int(_l_arty_arr[loser_src])
-                snap_l_cmd  = loser_cmd_arr[loser_src] 
-                snap_l_sf   = int(self.sub_faction[loser_src]) if loser == ALLIES else SUBFACTION_NONE
+                snap_l_cmd = loser_cmd_arr[loser_src] 
+                snap_l_sf = int(self.sub_faction[loser_src]) if loser == ALLIES else SUBFACTION_NONE
                 snap_l_hist = list(_l_hist_map.get(loser_src, []))
 
                 retreat_to = self._find_retreat_node(
@@ -1370,18 +1367,18 @@ class PeninsularWarEnv(gym.Env):
             # Defender wins -> advances to def_dst_idx (= att_src)
             #
             # SNAPSHOT winner state NOW for the same reason as the loser retreat.
-            defender    = ALLIES if attacker == FRANCE else FRANCE
-            winner_dst  = def_dst_idx if winner == defender else battle_idx
+            defender = ALLIES if attacker == FRANCE else FRANCE
+            winner_dst = def_dst_idx if winner == defender else battle_idx
             if winner_src != winner_dst:
-                _w_inf_arr  = self.france_infantry  if winner == FRANCE else self.allies_infantry
-                _w_cav_arr  = self.france_cavalry   if winner == FRANCE else self.allies_cavalry
+                _w_inf_arr = self.france_infantry  if winner == FRANCE else self.allies_infantry
+                _w_cav_arr = self.france_cavalry   if winner == FRANCE else self.allies_cavalry
                 _w_arty_arr = self.france_artillery if winner == FRANCE else self.allies_artillery
                 _w_hist_map = self.france_army_history if winner == FRANCE else self.allies_army_history
-                snap_w_inf  = int(_w_inf_arr[winner_src])
-                snap_w_cav  = int(_w_cav_arr[winner_src])
+                snap_w_inf = int(_w_inf_arr[winner_src])
+                snap_w_cav = int(_w_cav_arr[winner_src])
                 snap_w_arty = int(_w_arty_arr[winner_src])
-                snap_w_cmd  = winner_cmd_arr[winner_src]
-                snap_w_sf   = int(self.sub_faction[winner_src]) if winner == ALLIES else SUBFACTION_NONE
+                snap_w_cmd = winner_cmd_arr[winner_src]
+                snap_w_sf = int(self.sub_faction[winner_src]) if winner == ALLIES else SUBFACTION_NONE
                 snap_w_hist = list(_w_hist_map.get(winner_src, []))
                 # Defer advance (9-tuple) until after _apply_all_moves
                 pending_moves.append((winner, winner_src, winner_dst,
@@ -1445,7 +1442,7 @@ class PeninsularWarEnv(gym.Env):
             # When both armies moved in simultaneously, if the defender's road is
             # more surprising than the attacker's, set it as primary for no advantage for the attacker
             _road_rank = {'primary': 0, 'secondary': 1, 'tertiary': 2}
-            att_src   = f_moved_to.get(i) if attacker == FRANCE else a_moved_to.get(i)
+            att_src = f_moved_to.get(i) if attacker == FRANCE else a_moved_to.get(i)
             road_type = 'primary'
             if att_src is not None:
                 road_type = self._road_type.get((self.node_ids[att_src], nid), 'primary')
@@ -1468,67 +1465,67 @@ class PeninsularWarEnv(gym.Env):
                       else (self.france_commander[i] or 'UNKNOWN')
 
             # Getting armies' track record, for momentum advantages
-            att_hist  = list(self.france_army_history.get(i, []) if attacker == FRANCE
+            att_hist = list(self.france_army_history.get(i, []) if attacker == FRANCE
                              else self.allies_army_history.get(i, []))
-            def_hist  = list(self.allies_army_history.get(i, []) if attacker == FRANCE
+            def_hist = list(self.allies_army_history.get(i, []) if attacker == FRANCE
                              else self.france_army_history.get(i, []))
-            att_wins  = sum(att_hist); att_total = len(att_hist)
-            def_wins  = sum(def_hist); def_total = len(def_hist)
+            att_wins = sum(att_hist); att_total = len(att_hist)
+            def_wins = sum(def_hist); def_total = len(def_hist)
 
             # Getting factions' track record, for initiative advantages
-            f_fact   = list(self.france_faction_history)
-            a_fact   = list(self.allies_faction_history)
-            att_fw   = sum(f_fact if attacker == FRANCE else a_fact)
-            att_ft   = len(f_fact if attacker == FRANCE else a_fact)
-            def_fw   = sum(a_fact if attacker == FRANCE else f_fact)
-            def_ft   = len(a_fact if attacker == FRANCE else f_fact)
+            f_fact = list(self.france_faction_history)
+            a_fact = list(self.allies_faction_history)
+            att_fw = sum(f_fact if attacker == FRANCE else a_fact)
+            att_ft = len(f_fact if attacker == FRANCE else a_fact)
+            def_fw = sum(a_fact if attacker == FRANCE else f_fact)
+            def_ft = len(a_fact if attacker == FRANCE else f_fact)
 
             # Getting supply distances, for logistics advantages
-            att_sup  = self._supply_distance(i, attacker)
-            def_sup  = self._supply_distance(i, ALLIES if attacker == FRANCE else FRANCE)
+            att_sup = self._supply_distance(i, attacker)
+            def_sup = self._supply_distance(i, ALLIES if attacker == FRANCE else FRANCE)
 
 
             # Call the battle model
             winner, f_men_cas, a_men_cas, f_arty_cas, a_arty_cas = resolve_battle(
-                france_infantry     = int(self.france_infantry[i]),
-                france_cavalry      = int(self.france_cavalry[i]),
-                france_artillery    = int(self.france_artillery[i]),
-                allies_infantry     = int(self.allies_infantry[i]),
-                allies_cavalry      = int(self.allies_cavalry[i]),
-                allies_artillery    = int(self.allies_artillery[i]),
-                terra1              = self._terra1[nid],
-                terra2              = self._terra2[nid],
-                occ_turns           = int(self.occ_turns[i]),
-                attacker_faction    = attacker,
+                france_infantry = int(self.france_infantry[i]),
+                france_cavalry = int(self.france_cavalry[i]),
+                france_artillery = int(self.france_artillery[i]),
+                allies_infantry = int(self.allies_infantry[i]),
+                allies_cavalry = int(self.allies_cavalry[i]),
+                allies_artillery = int(self.allies_artillery[i]),
+                terra1 = self._terra1[nid],
+                terra2 = self._terra2[nid],
+                occ_turns = int(self.occ_turns[i]),
+                attacker_faction = attacker,
                 attacker_subfaction = att_sf,
                 defender_subfaction = def_sf,
-                att_commander       = att_cmd,
-                def_commander       = def_cmd,
-                road_type           = road_type,
-                att_supply_dist     = att_sup,
-                def_supply_dist     = def_sup,
-                att_army_wins       = att_wins,
-                att_army_total      = att_total,
-                def_army_wins       = def_wins,
-                def_army_total      = def_total,
-                att_faction_wins    = att_fw,
-                att_faction_total   = att_ft,
-                def_faction_wins    = def_fw,
-                def_faction_total   = def_ft,
+                att_commander = att_cmd,
+                def_commander = def_cmd,
+                road_type = road_type,
+                att_supply_dist = att_sup,
+                def_supply_dist = def_sup,
+                att_army_wins = att_wins,
+                att_army_total = att_total,
+                def_army_wins = def_wins,
+                def_army_total = def_total,
+                att_faction_wins = att_fw,
+                att_faction_total = att_ft,
+                def_faction_wins = def_fw,
+                def_faction_total = def_ft,
             )
 
             # Snapshot pre-battle sizes for the log
-            f_inf_snap  = int(self.france_infantry[i])
-            f_cav_snap  = int(self.france_cavalry[i])
+            f_inf_snap = int(self.france_infantry[i])
+            f_cav_snap = int(self.france_cavalry[i])
             f_arty_snap = int(self.france_artillery[i])
-            a_inf_snap  = int(self.allies_infantry[i])
-            a_cav_snap  = int(self.allies_cavalry[i])
+            a_inf_snap = int(self.allies_infantry[i])
+            a_cav_snap = int(self.allies_cavalry[i])
             a_arty_snap = int(self.allies_artillery[i])
 
             # Verbose battle debug print
-            _att_q    = COMMANDER_QUALITY.get(att_cmd.upper(), COMMANDER_QUALITY_DEFAULT)
-            _def_q    = COMMANDER_QUALITY.get(def_cmd.upper(), COMMANDER_QUALITY_DEFAULT)
-            _sf_name  = {-1: 'French', 0: 'British', 1: 'Spanish', 2: 'Portuguese'}
+            _att_q = COMMANDER_QUALITY.get(att_cmd.upper(), COMMANDER_QUALITY_DEFAULT)
+            _def_q = COMMANDER_QUALITY.get(def_cmd.upper(), COMMANDER_QUALITY_DEFAULT)
+            _sf_name = {-1: 'French', 0: 'British', 1: 'Spanish', 2: 'Portuguese'}
             self._vprint(
                 f"\n{'='*62}\n"
                 f"  BATTLE at {nid}  (turn {self.turn})\n"
@@ -1546,13 +1543,13 @@ class PeninsularWarEnv(gym.Env):
                 f"  Allies casualties : men={a_men_cas:5d}  arty={a_arty_cas:3d}\n"
                 f"{'='*62}\n"
             )
-            # ── Apply casualties to both sides ────────────────────────────────
-            loser          = ALLIES if winner == FRANCE else FRANCE
-            loser_is_att   = (loser == attacker)
-            w_men_cas      = f_men_cas  if winner == FRANCE else a_men_cas
-            w_arty_cas     = f_arty_cas if winner == FRANCE else a_arty_cas
-            l_men_cas      = a_men_cas  if winner == FRANCE else f_men_cas
-            l_arty_cas     = a_arty_cas if winner == FRANCE else f_arty_cas
+            # Apply casualties to both sides
+            loser = ALLIES if winner == FRANCE else FRANCE
+            loser_is_att = (loser == attacker)
+            w_men_cas = f_men_cas  if winner == FRANCE else a_men_cas
+            w_arty_cas = f_arty_cas if winner == FRANCE else a_arty_cas
+            l_men_cas = a_men_cas  if winner == FRANCE else f_men_cas
+            l_arty_cas = a_arty_cas if winner == FRANCE else f_arty_cas
 
             self._apply_casualties(winner, i, w_men_cas, w_arty_cas)
             self._apply_casualties(loser,  i, l_men_cas, l_arty_cas)
@@ -1568,11 +1565,11 @@ class PeninsularWarEnv(gym.Env):
             a_cmd_died = False
 
             winner_cmd_arr = self.france_commander if winner == FRANCE else self.allies_commander
-            loser_cmd_arr  = self.allies_commander if winner == FRANCE else self.france_commander
-            winner_gone    = self.france_gone if winner == FRANCE else self.allies_gone
-            loser_gone     = self.allies_gone if winner == FRANCE else self.france_gone
+            loser_cmd_arr = self.allies_commander if winner == FRANCE else self.france_commander
+            winner_gone = self.france_gone if winner == FRANCE else self.allies_gone
+            loser_gone = self.allies_gone if winner == FRANCE else self.france_gone
 
-            loser_cmd       = loser_cmd_arr[i]
+            loser_cmd = loser_cmd_arr[i]
             loser_cmd_alive = True
             if loser_cmd and loser_cmd != 'UNKNOWN':
                 if self.np_random.random() < COMMANDER_DEATH_PROB:
@@ -1619,7 +1616,7 @@ class PeninsularWarEnv(gym.Env):
                 self.france_army_history.setdefault(i, deque(maxlen=MOMNTA_WINDOW)).append(0)
 
             # Loser retreat / elimination
-            loser_name   = 'France' if loser == FRANCE else 'Allies'
+            loser_name = 'France' if loser == FRANCE else 'Allies'
             retreat_node = None
             if not self._has_army(loser, i):
                 self._vprint(f"  Retreat  : {loser_name} DESTROYED by casualties")
@@ -1689,7 +1686,7 @@ class PeninsularWarEnv(gym.Env):
             a_men = self._men(ALLIES, i)
 
             def _apply_siege_loss(faction: int, total_men: int):
-                a_loss   = max(0, round(total_men * SIEGE_ATTACKER_LOSS_RATE))
+                a_loss = max(0, round(total_men * SIEGE_ATTACKER_LOSS_RATE))
                 cav_loss = round(a_loss * CAVALRY_CASUALTY_RATIO)
                 inf_loss = a_loss - cav_loss
                 if faction == FRANCE:
@@ -1715,9 +1712,9 @@ class PeninsularWarEnv(gym.Env):
 
                 # If the garrison falls below 100 men, the siege is completed
                 if self.current_garrison[i] < 100:
-                    self.owner[i]            = FRANCE
+                    self.owner[i] = FRANCE
                     self.current_garrison[i] = int(self._garrison_cap[i])
-                    self.occ_turns[i]        = 0
+                    self.occ_turns[i] = 0
                     log.append({'node': nid, 'event': 'captured', 'by': 'France'})
                 else:
                     log.append({'node': nid, 'event': 'siege', 'attacker': 'France',
@@ -1731,9 +1728,9 @@ class PeninsularWarEnv(gym.Env):
 
                 # If the garrison falls below 100 men, the siege is completed
                 if self.current_garrison[i] < 100:
-                    self.owner[i]            = ALLIES
+                    self.owner[i] = ALLIES
                     self.current_garrison[i] = int(self._garrison_cap[i])
-                    self.occ_turns[i]        = 0
+                    self.occ_turns[i] = 0
                     log.append({'node': nid, 'event': 'captured', 'by': 'Allies'})
                 else:
                     log.append({'node': nid, 'event': 'siege', 'attacker': 'Allies',
@@ -1746,18 +1743,18 @@ class PeninsularWarEnv(gym.Env):
         for i in range(self.N):
             f_has = self._has_army(FRANCE, i)
             a_has = self._has_army(ALLIES, i)
-            g     = int(self.current_garrison[i])
+            g = int(self.current_garrison[i])
 
             if f_has and not a_has:
                 # France present and unopposed, capture if not already French
                 # For garrisoned nodes (cities+) capture only when garrison falls (handled by _resolve_sieges)
                 if self.owner[i] != FRANCE and g == 0:
-                    self.owner[i]     = FRANCE
+                    self.owner[i] = FRANCE
                     self.occ_turns[i] = 0
             elif a_has and not f_has:
                 # Allies present and unopposed
                 if self.owner[i] != ALLIES and g == 0:
-                    self.owner[i]     = ALLIES
+                    self.owner[i] = ALLIES
                     self.occ_turns[i] = 0
             # When both armies leave, ownership is RETAINED, nodes stay under the last
             # occupying faction until an enemy army physically passes through.
@@ -1841,7 +1838,7 @@ class PeninsularWarEnv(gym.Env):
         for nid in ALLIES_REINF_DEPOTS:
             if nid not in self.node_idx:
                 continue
-            i  = self.node_idx[nid]
+            i = self.node_idx[nid]
             sf = ALLIES_REINF_SUBFACTIONS.get(nid, SUBFACTION_SPANISH)
 
             # No accumulation if depot is enemy-held
@@ -1958,7 +1955,7 @@ class PeninsularWarEnv(gym.Env):
             return 0.0
         total = 0.0
         for i in owned:
-            nid  = self.node_ids[i]
+            nid = self.node_ids[i]
             nbrs = [n for n in self.neighbour_list[nid] if n is not None]
             frac = (sum(1 for n in nbrs if self.owner[self.node_idx[n]] == faction) / len(nbrs)
                     if nbrs else 1.0)
@@ -1983,7 +1980,7 @@ class PeninsularWarEnv(gym.Env):
             men = int(inf_arr[i] + cav_arr[i])
             if men == 0:
                 continue
-            nid  = self.node_ids[i]
+            nid = self.node_ids[i]
             nbrs = [n for n in self.neighbour_list[nid] if n is not None]
             frac = (sum(1 for n in nbrs if self.owner[self.node_idx[n]] == faction) / len(nbrs)
                     if nbrs else 1.0)
@@ -2007,19 +2004,19 @@ class PeninsularWarEnv(gym.Env):
         allies_troops = int(np.sum(self.allies_infantry + self.allies_cavalry + self.allies_artillery))
 
         for faction in (FRANCE, ALLIES):
-            mask_high  = self._si_raw >= 4
+            mask_high = self._si_raw >= 4
             mask_three = self._si_raw == 3
-            mask_two   = self._si_raw == 2
+            mask_two = self._si_raw == 2
 
-            owns_high  = int(np.sum((self.owner == faction) & mask_high))
+            owns_high = int(np.sum((self.owner == faction) & mask_high))
             owns_three = int(np.sum((self.owner == faction) & mask_three))
-            owns_two   = int(np.sum((self.owner == faction) & mask_two))
+            owns_two = int(np.sum((self.owner == faction) & mask_two))
 
-            if (self._n_si_high  > 0 and owns_high  < self._n_si_high) :
+            if (self._n_si_high > 0 and owns_high < self._n_si_high) :
                 continue
             if (self._n_si_three > 0 and owns_three < 0.90 * self._n_si_three):
                 continue
-            if (self._n_si_two   > 0 and owns_two   < 0.75 * self._n_si_two):
+            if (self._n_si_two > 0 and owns_two < 0.75 * self._n_si_two):
                 continue
 
             # Territorial condition met — only a win if the loser is also militarily spent
@@ -2039,7 +2036,7 @@ class PeninsularWarEnv(gym.Env):
                   city=0.2,  town=0.05, intersection=0
         """
         france_score = float(np.sum(self._terminal_weight[self.owner == FRANCE]))
-        allies_score  = float(np.sum(self._terminal_weight[self.owner == ALLIES]))
+        allies_score = float(np.sum(self._terminal_weight[self.owner == ALLIES]))
         return france_score - allies_score
 
     def _compute_reward(
@@ -2120,23 +2117,23 @@ class PeninsularWarEnv(gym.Env):
         zero-sum reward, because an agent cannot influence the opponent's
         depot management and should not receive noise for it.
         """
-        depots   = FRANCE_REINF_DEPOTS if faction == FRANCE else ALLIES_REINF_DEPOTS
+        depots = FRANCE_REINF_DEPOTS if faction == FRANCE else ALLIES_REINF_DEPOTS
         pool_map = self.france_reinf_pool if faction == FRANCE else self.allies_reinf_pool
         threshold = float(REINF_SPAWN_THRESHOLD)
-        cap       = float(REINF_POOL_CAP)
-        penalty   = 0.0
+        cap = float(REINF_POOL_CAP)
+        penalty = 0.0
         for nid in depots:
             pool = float(pool_map.get(nid, 0))
             if pool > threshold:
-                gradient  = (pool - threshold) / threshold   # 0 → 1
-                penalty  += gradient * W_DEPOT_BASE_PENALTY
+                gradient = (pool - threshold) / threshold   # 0 → 1
+                penalty += gradient * W_DEPOT_BASE_PENALTY
                 if pool >= cap:
                     penalty += W_DEPOT_SPIKE
         return penalty
 
 
     
-    # ── Observation builder ─────────────────────────────────────────────────
+    # Observation builder
 
     def _get_obs(self, faction: int) -> np.ndarray:
         """
@@ -2208,13 +2205,13 @@ class PeninsularWarEnv(gym.Env):
                     break
 
         # Normalisation constants
-        _INF_NORM  = 100_000.0
-        _CAV_NORM  = 15_000.0   # Max realistic cavalry at one node (15% of 100k)
+        _INF_NORM = 100_000.0
+        _CAV_NORM = 15_000.0   # Max realistic cavalry at one node (15% of 100k)
         _ARTY_NORM = 300.0    # 3 guns/1k men × 100k cap = 300 guns
-        _OCC_NORM  = 52.0
+        _OCC_NORM = 52.0
         _DIST_NORM = 300.0
-        _ROAD_ENC  = {'primary': 1.0, 'secondary': 0.5, 'tertiary': 0.25}
-        _N1        = float(max(1, self.N - 1))
+        _ROAD_ENC = {'primary': 1.0, 'secondary': 0.5, 'tertiary': 0.25}
+        _N1 = float(max(1, self.N - 1))
 
         f_men_total = float(max(1, int(np.sum(self.france_infantry + self.france_cavalry))))
         a_men_total = float(max(1, int(np.sum(self.allies_infantry + self.allies_cavalry))))
@@ -2249,7 +2246,7 @@ class PeninsularWarEnv(gym.Env):
                     obs[slot + 2] = _ROAD_ENC.get(rt, 0.0)
                 continue   # Only knows the neighbours of each node, not the information within each (fog of war)
 
-            base  = i * 43
+            base = i * 43
             owner = int(self.owner[i])
 
             # [0] owner
@@ -2322,7 +2319,7 @@ class PeninsularWarEnv(gym.Env):
                 obs[slot + 1] = min(1.0, dist_km / _DIST_NORM)
                 obs[slot + 2] = _ROAD_ENC.get(rt, 0.0)
 
-        # -- Global features
+        # Global features
         g = self.N * 43
 
         # [9890] Turn
@@ -2355,19 +2352,19 @@ class PeninsularWarEnv(gym.Env):
 
 
     def _get_info(self) -> dict:
-        f_men  = int(np.sum(self.france_infantry + self.france_cavalry))
-        a_men  = int(np.sum(self.allies_infantry  + self.allies_cavalry))
+        f_men = int(np.sum(self.france_infantry + self.france_cavalry))
+        a_men = int(np.sum(self.allies_infantry  + self.allies_cavalry))
         f_arty = int(np.sum(self.france_artillery))
         a_arty = int(np.sum(self.allies_artillery))
         info = {
-            'turn':               self.turn,
-            'france_troops':      f_men,
-            'france_arty':        f_arty,
-            'allies_troops':      a_men,
-            'allies_arty':        a_arty,
-            'france_nodes':       int(np.sum(self.owner == FRANCE)),
-            'allies_nodes':       int(np.sum(self.owner == ALLIES)),
-            'neutral_nodes':      int(np.sum(self.owner == NEUTRAL)),
+            'turn': self.turn,
+            'france_troops': f_men,
+            'france_arty': f_arty,
+            'allies_troops': a_men,
+            'allies_arty': a_arty,
+            'france_nodes': int(np.sum(self.owner == FRANCE)),
+            'allies_nodes': int(np.sum(self.owner == ALLIES)),
+            'neutral_nodes': int(np.sum(self.owner == NEUTRAL)),
             'france_reinf_pools': dict(self.france_reinf_pool),
             'allies_reinf_pools': dict(self.allies_reinf_pool),
         }

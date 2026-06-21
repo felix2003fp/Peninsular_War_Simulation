@@ -1,8 +1,6 @@
 from __future__ import annotations
-
 from pathlib import Path
 from typing import TYPE_CHECKING, List
-
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.image as mpimg
@@ -20,7 +18,7 @@ from .config import (
     SUBFACTION_BRITISH, SUBFACTION_SPANISH, SUBFACTION_PORTUGUESE,
 )
 
-# ── Coordinate calibration ──────────────────────
+# Coordinate calibration
 
 # Coordinate projection (lat/lon -> native topo-map pixel) is shared with
 # Env/pygame_renderer.py and Map/visualise_graph.py — defined once in
@@ -32,7 +30,7 @@ if str(_ROOT) not in _sys.path:
 from Map.map_projection import latlon_to_pixel as _to_px
 
 
-# ── Flag images (loaded from Map/ PNG files) ──────────────────────────────────
+# Flag images (loaded from Map/ PNG files)
 
 def _load_flag(filename: str) -> np.ndarray:
     """
@@ -40,17 +38,17 @@ def _load_flag(filename: str) -> np.ndarray:
     Returns a uint8 RGB numpy array.
     """
     path = Path(__file__).parent.parent / 'Map' / filename
-    img  = Image.open(str(path)).convert('RGB').resize((36, 24), Image.LANCZOS)
+    img = Image.open(str(path)).convert('RGB').resize((36, 24), Image.LANCZOS)
     return np.array(img, dtype=np.uint8)
 
 
-_FRANCE_FLAG   = _load_flag('Flags/French_Flag.png')
-_UK_FLAG       = _load_flag('Flags/British_Flag.png')
-_SPAIN_FLAG    = _load_flag('Flags/Spanish_Flag.png')
+_FRANCE_FLAG = _load_flag('Flags/French_Flag.png')
+_UK_FLAG = _load_flag('Flags/British_Flag.png')
+_SPAIN_FLAG = _load_flag('Flags/Spanish_Flag.png')
 _PORTUGAL_FLAG = _load_flag('Flags/Portuguese_Flag.png')
 
 
-# ── Node symbol images ───────────────────────
+# Node symbol images
 
 def _load_node_image(filename: str) -> np.ndarray:
     """Load a node-symbol PNG from Map/ at native resolution, RGBA."""
@@ -114,7 +112,7 @@ def _node_symbol(node_id: str, ntype: str, owner: int | None = None):
     Return the image with its corresponding zoom
     """
     filename = _NODE_IMAGE_OVERRIDE.get(node_id, _NODE_IMAGE_FILE.get(ntype, _NODE_IMAGE_FILE['town']))
-    zoom     = _NODE_ZOOM_OVERRIDE.get(node_id, _NODE_ZOOM.get(ntype, _NODE_ZOOM['town']))
+    zoom = _NODE_ZOOM_OVERRIDE.get(node_id, _NODE_ZOOM.get(ntype, _NODE_ZOOM['town']))
     if filename not in _NODE_IMAGE_CACHE:
         _NODE_IMAGE_CACHE[filename] = _load_node_image(filename)
     base = _NODE_IMAGE_CACHE[filename]
@@ -126,7 +124,7 @@ def _node_symbol(node_id: str, ntype: str, owner: int | None = None):
     return _NODE_TINT_CACHE[key], zoom
 
 
-# ── Style tables ──────────────────────────────────────────────────────────────
+# Style tables
 
 _NODE_FC = {FRANCE: '#4169E1', ALLIES: '#C41E3A', NEUTRAL: '#CCCCCC'}
 _NODE_EC = {FRANCE: '#1A3A8F', ALLIES: '#7D0000', NEUTRAL: '#888888'}
@@ -142,14 +140,14 @@ _EDGE_STYLE = {
 class MapRenderer:
     """
     Initialises once after env.reset()
+
     Parameters
-    ----------
     env : PeninsularWarEnv
     """
 
     def __init__(self, env: 'PeninsularWarEnv'):
         self.env = env
-        root     = Path(__file__).parent.parent
+        root = Path(__file__).parent.parent
 
         # Static node/edge metadata
         nodes_df = pd.read_csv(root / 'Map' / 'nodes.csv')
@@ -170,9 +168,9 @@ class MapRenderer:
         self._px: dict[str, float] = {}
         self._py: dict[str, float] = {}
         for nid in env.node_ids:
-            px, py         = _to_px(env._lat[nid], env._lon[nid])
-            self._px[nid]  = px
-            self._py[nid]  = py
+            px, py = _to_px(env._lat[nid], env._lon[nid])
+            self._px[nid] = px
+            self._py[nid] = py
 
         # Set up figure
         plt.ion()
@@ -185,8 +183,8 @@ class MapRenderer:
             self._bg = None
             self._iw, self._ih = 2200, 1800
 
-        fig_w  = 15
-        fig_h  = fig_w * self._ih / self._iw
+        fig_w = 15
+        fig_h = fig_w * self._ih / self._iw
         self.fig, self.ax = plt.subplots(figsize=(fig_w, fig_h))
         self.fig.patch.set_facecolor('black')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
@@ -202,8 +200,8 @@ class MapRenderer:
             n1, n2 = row['node1'], row['node2']
             if n1 not in self._px or n2 not in self._px:
                 continue
-            rt                = row.get('road_type', 'secondary')
-            col, lw, alp, ls  = _EDGE_STYLE.get(rt, _EDGE_STYLE['secondary'])
+            rt = row.get('road_type', 'secondary')
+            col, lw, alp, ls = _EDGE_STYLE.get(rt, _EDGE_STYLE['secondary'])
             self.ax.plot(
                 [self._px[n1], self._px[n2]],
                 [self._py[n1], self._py[n2]],
@@ -223,7 +221,6 @@ class MapRenderer:
         Redraws all dynamic elements.  Gets called after every env.step().
 
         Parameters
-        ----------
         battle_log : list of battle dicts from env.step() info['battles']
         """
         for art in self._dyn:
@@ -242,13 +239,12 @@ class MapRenderer:
         self.fig.canvas.draw_idle()
         plt.pause(0.05)
 
-    # Internal draw methods
 
     def _draw_nodes(self):
         env = self.env
         for i, nid in enumerate(env.node_ids):
-            owner  = int(env.owner[i])
-            ntype  = self._ntype.get(nid, 'town')
+            owner = int(env.owner[i])
+            ntype = self._ntype.get(nid, 'town')
             px, py = self._px[nid], self._py[nid]
 
             # Node symbol, tinted by faction owner
@@ -273,14 +269,14 @@ class MapRenderer:
     def _draw_flags(self):
         env = self.env
         _allied_flag = {
-            SUBFACTION_BRITISH:    _UK_FLAG,
-            SUBFACTION_SPANISH:    _SPAIN_FLAG,
+            SUBFACTION_BRITISH: _UK_FLAG,
+            SUBFACTION_SPANISH: _SPAIN_FLAG,
             SUBFACTION_PORTUGUESE: _PORTUGAL_FLAG,
         }
         for i, nid in enumerate(env.node_ids):
-            f_men  = int(env.france_infantry[i] + env.france_cavalry[i])
+            f_men = int(env.france_infantry[i] + env.france_cavalry[i])
             f_arty = int(env.france_artillery[i])
-            a_men  = int(env.allies_infantry[i]  + env.allies_cavalry[i])
+            a_men = int(env.allies_infantry[i]  + env.allies_cavalry[i])
             a_arty = int(env.allies_artillery[i])
             px, py = self._px[nid], self._py[nid]
 
@@ -289,7 +285,7 @@ class MapRenderer:
                 self._add_label(px - 8, py - 14, f_men,
                                 _NODE_FC[FRANCE], _NODE_EC[FRANCE])
             if a_men > 0 or a_arty > 0:
-                sf   = int(env.sub_faction[i])
+                sf = int(env.sub_faction[i])
                 flag = _allied_flag.get(sf, _UK_FLAG)
                 offset = 10 if (f_men > 0 or f_arty > 0) else 0
                 self._add_flag(flag, px + offset, py - 14, zoom=0.5)
@@ -314,7 +310,9 @@ class MapRenderer:
         self._dyn.append(txt)
 
     def _draw_battle_markers(self, battle_log: List[dict]):
-        """Marks nodes where a battle occurred this turn."""
+        """
+        Marks nodes where a battle occurred this turn.
+        """
         for b in battle_log:
             nid = b['node']
             if nid not in self._px:
@@ -327,14 +325,14 @@ class MapRenderer:
             self._dyn.append(txt)
 
     def _draw_scoreboard(self):
-        env  = self.env
-        f_t  = int(np.sum(env.france_infantry + env.france_cavalry))
-        a_t  = int(np.sum(env.allies_infantry  + env.allies_cavalry))
-        f_g  = int(np.sum(env.france_artillery))
-        a_g  = int(np.sum(env.allies_artillery))
-        f_n  = int(np.sum(env.owner == FRANCE))
-        a_n  = int(np.sum(env.owner == ALLIES))
-        t    = env.turn
+        env = self.env
+        f_t = int(np.sum(env.france_infantry + env.france_cavalry))
+        a_t = int(np.sum(env.allies_infantry + env.allies_cavalry))
+        f_g = int(np.sum(env.france_artillery))
+        a_g = int(np.sum(env.allies_artillery))
+        f_n = int(np.sum(env.owner == FRANCE))
+        a_n = int(np.sum(env.owner == ALLIES))
+        t = env.turn
 
         board = (
             f"  Turn {t:>3} / {MAX_TURNS}  ({t / 52:.1f} yrs)\n"

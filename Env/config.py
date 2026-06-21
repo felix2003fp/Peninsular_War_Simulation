@@ -33,7 +33,7 @@ MAX_ARMIES = 10    # Hard cap on concurrent armies per faction
 MIN_ARMY_SIZE = 100
 
 
-# ── Historical 1808 starting positions ───────────────────────────────────────
+# Historical 1808 starting positions
 # France enters from the Pyrenees through five passes / border corridors.
 # All other nodes default to ALLIES (Spanish / Portuguese territory).
 FRANCE_START_NODES = ['LJQ', 'VER', 'MAY', 'PAM', 'HUE']
@@ -102,10 +102,10 @@ ARTY_PER_1000 = {               # Artillery guns per 1,000 troops
 # Key: (attacker_faction, defender_subfaction)
 # France vs Iberian allies has techa=1; all other matchups techa=0.
 TECHA_TABLE = {
-    (FRANCE, SUBFACTION_BRITISH):    0,
-    (FRANCE, SUBFACTION_SPANISH):    1,
+    (FRANCE, SUBFACTION_BRITISH): 0,
+    (FRANCE, SUBFACTION_SPANISH): 1,
     (FRANCE, SUBFACTION_PORTUGUESE): 1,
-    (ALLIES, SUBFACTION_NONE):       0,   # Allies attacking France: parity
+    (ALLIES, SUBFACTION_NONE): 0,   # Allies attacking France: parity
 }
 
 # ── Morale advantage table
@@ -163,6 +163,7 @@ COMMANDER_QUALITY = {
     'JUNOT': 0.47,   # Lost Vimeiro; limited ability
     'JOSEPH BONAPARTE': 0.40,  # Poor commander; lost Vitoria
     'CLAUSEL': 0.55,   # Reliable but often in hard situations
+
     # British commanders 
     'WELLINGTON': 0.90,   # Best allied commander
     'BERESFORD': 0.55,   # Won Albuera at high cost
@@ -170,12 +171,14 @@ COMMANDER_QUALITY = {
     'MOORE': 0.58,   # Coruña rearguard; capable general
     'GRAHAM': 0.60,   # Won Barrosa; dependable
     'PICTON': 0.65,   # Aggressive 3rd Division commander; excellent record
+
     # Spanish 
     'CASTANOS': 0.52,   # Won Bailén; mixed thereafter
     'CUESTA': 0.38,   # Medellin disaster; poor record
     'BLAKE': 0.35,   # Repeatedly defeated by French
     'LA ROMANA': 0.45,   # Struggled throughout
     'MORILLO': 0.55,   # Reliable; worked well with Wellington mid-late war
+
     # Portuguese 
     'SILVEIRA': 0.55,   # Defended N. Portugal, recaptured Chaves
     'FREIRE': 0.55,   # Solid divisional commander throughout
@@ -201,6 +204,7 @@ COMMANDER_SENIORITY = {
     'MARMONT': 14,   # Marshal — Army of Portugal
     'JUNOT': 15,   # General of Division — Sintra
     'CLAUSEL': 16,   # General of Division — late-war replacement
+    
     # Allied chain of command
     'WELLINGTON': 1,   # Viscount/Duke; supreme Allied CiC from turn 22
     'MOORE': 2,   # Lieutenant-General; British CiC before Wellington
