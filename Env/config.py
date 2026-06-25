@@ -283,21 +283,23 @@ REINF_POOL_CAP = 40000   # Hard ceiling per depot (2x threshold); excess lost
 # (turn_start, rate_per_depot_france, rate_per_depot_allies)
 # Rate = men added to EACH depot's pool per turn (same depot count per side).
 # France totals = rate x 2;  Allies totals = rate x 2.
-# Periods are derived from Wikipedia strength data and historical events:
-#   turn  0  = November 1808  (simulation start)
-#   turn 65  = April 1809     (Fifth Coalition begins)
-#   turn 90  = October 1809   (Wagram; Austria makes peace)
-#   turn 165 = mid-1811       (Russian campaign preparations)
-#   turn 209 = mid-1812       (Grande Armee crosses into Russia)
-#   turn 260 = early 1813     (France fighting for survival in Germany)
+# Periods are derived from Wikipedia strength data and historical events.
+# Turn boundaries are anchored at turn 0 = early November 1808 with one turn
+# per week (turn = floor((date - 1808-11-04) / 7 days)):
+#   turn   0 = November 1808  (simulation start)
+#   turn  22 = April 1809     (Fifth Coalition begins)
+#   turn  49 = October 1809   (Wagram aftermath; Austria makes peace)
+#   turn 138 = mid-1811       (Russian campaign preparations)
+#   turn 189 = mid-1812       (Grande Armee crosses into Russia, late June 1812)
+#   turn 221 = early 1813     (France fighting for survival in Germany)
 
 REINFORCEMENT_SCHEDULE = [
     (  0, 750, 400),   # Napoleon's surge; Allies disorganised
-    ( 65, 300, 500),   # Fifth Coalition diverts French strength
-    ( 90, 400, 700),   # France recovers post-Wagram; Portuguese reform bearing fruit
-    (165, 200, 600),   # Russian prep strips French veterans; Allied strength growing
-    (209, 75, 900),   # Russian campaign; Wellington on the offensive
-    (260, 50, 800),   # France fighting for survival; Allied peak
+    ( 22, 300, 500),   # Fifth Coalition diverts French strength
+    ( 49, 400, 700),   # France recovers post-Wagram; Portuguese reform bearing fruit
+    (138, 200, 600),   # Russian prep strips French veterans; Allied strength growing
+    (189, 75, 900),   # Russian campaign; Wellington on the offensive
+    (221, 50, 800),   # France fighting for survival; Allied peak
 ]
 
 # March attrition (road-type penalty)
