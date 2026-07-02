@@ -411,6 +411,12 @@ class PeninsularWarEnv(gym.Env):
         rewards = {'france': france_r, 'allies': allies_r}
         info['battles'] = battle_log
         info['sieges'] = siege_log
+        # Per-turn movements (src -> dst node indices), exposed for the renderer
+        # to animate smooth army motion. Only actual moves (src != dst) are listed.
+        info['moves'] = (
+            [('france', s, d, det) for (s, d, _i, _c, _a, det) in f_moves if s != d]
+            + [('allies', s, d, det) for (s, d, _i, _c, _a, det) in a_moves if s != d]
+        )
 
         if self.render_mode == 'human':
             self.render()
@@ -2229,28 +2235,34 @@ class PeninsularWarEnv(gym.Env):
 
         # Per-node features
         for i, nid in enumerate(self.node_ids):
-            if not visible[i]:
-                # [19-42] neighbour edge features: 8 slots x 3 values
-                nbrs = self.neighbour_list[nid]
-                dists = self.neighbour_dist[nid]
-                for d in range(MAX_DEGREE):
-                    nbr_name = nbrs[d] if d < len(nbrs) else None
-                    slot = base + 19 + d * 3
-                    if nbr_name is None:
-                        continue
-                    nbr_idx = self.node_idx[nbr_name]
-                    dist_km = dists[d] if (d < len(dists) and dists[d] is not None) else 0.0
-                    rt = self._road_type.get((nid, nbr_name), '')
-                    obs[slot] = nbr_idx / _N1
-                    obs[slot + 1] = min(1.0, dist_km / _DIST_NORM)
-                    obs[slot + 2] = _ROAD_ENC.get(rt, 0.0)
-                continue   # Only knows the neighbours of each node, not the information within each (fog of war)
-
             base = i * 43
             owner = int(self.owner[i])
 
             # [0] owner
             obs[base + 0] = 0.0 if owner == NEUTRAL else 0.5 if owner == FRANCE else 1.0
+
+            # [18] node's strategic importance
+            obs[base + 18] = float(self._strategic_importance[i])
+
+            # [19-42] neighbour edge features: 8 slots x 3 values
+            nbrs = self.neighbour_list[nid]
+            dists = self.neighbour_dist[nid]
+            for d in range(MAX_DEGREE):
+                nbr_name = nbrs[d] if d < len(nbrs) else None
+                slot = base + 19 + d * 3
+                if nbr_name is None:
+                    continue
+                nbr_idx = self.node_idx[nbr_name]
+                dist_km = dists[d] if (d < len(dists) and dists[d] is not None) else 0.0
+                rt = self._road_type.get((nid, nbr_name), '')
+                obs[slot] = nbr_idx / _N1
+                obs[slot + 1] = min(1.0, dist_km / _DIST_NORM)
+                obs[slot + 2] = _ROAD_ENC.get(rt, 0.0)
+
+
+            if not visible[i]:
+                continue   # Only knows the owner, strategic importance and neighbours of each node,
+                                                    # not the information within each (fog of war)
 
             # [1-6] troop counts
             obs[base + 1] = min(1.0, int(self.france_infantry[i])  / _INF_NORM)
@@ -2301,23 +2313,6 @@ class PeninsularWarEnv(gym.Env):
             else:
                 obs[base + 17] = min(1.0, allies_depot_pool.get(i, 0.0))
 
-            # [18] node's strategic importance
-            obs[base + 18] = float(self._strategic_importance[i])
-
-            # [19-42] neighbour edge features: 8 slots x 3 values
-            nbrs = self.neighbour_list[nid]
-            dists = self.neighbour_dist[nid]
-            for d in range(MAX_DEGREE):
-                nbr_name = nbrs[d] if d < len(nbrs) else None
-                slot = base + 19 + d * 3
-                if nbr_name is None:
-                    continue
-                nbr_idx = self.node_idx[nbr_name]
-                dist_km = dists[d] if (d < len(dists) and dists[d] is not None) else 0.0
-                rt = self._road_type.get((nid, nbr_name), '')
-                obs[slot] = nbr_idx / _N1
-                obs[slot + 1] = min(1.0, dist_km / _DIST_NORM)
-                obs[slot + 2] = _ROAD_ENC.get(rt, 0.0)
 
         # Global features
         g = self.N * 43
